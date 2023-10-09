@@ -1,0 +1,9 @@
+{
+    "name": "webhmiserver",
+    "version-string": "master",
+    "dependencies": [
+        "asio",
+        "openssl",
+        "zlib"
+    ]
+}

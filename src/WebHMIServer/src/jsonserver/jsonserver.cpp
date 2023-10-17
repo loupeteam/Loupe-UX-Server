@@ -34,6 +34,12 @@ int jsonserver::start( int port ) {
         std::lock_guard<std::mutex> _(mtx);
         crow::json::wvalue x = crow::json::load(data);
         x["type"] = "readresponse";
+        crow::json::wvalue variable = x["data"];
+        for (size_t i = 0; i < variable.keys().size(); i++)
+        {
+//          x["data"] = variable.
+        }
+        
 
         conn.send_text(x.dump());
       });
@@ -45,6 +51,9 @@ int jsonserver::start( int port ) {
 }
 
 int jsonserver::addDataSource(DataSource &ds){
-  this->dataSources.insert(&ds);
+  this->dataSources.push_back(&ds);
   return 0;
+}
+crow::json::wvalue jsonserver::getVariable(std::string name){
+  return this->dataSources.at(0)->getVariable(name);
 }

@@ -3,6 +3,7 @@
 #include <future>
 #include <mutex>
 #include <unordered_set>
+#include <vector>
 #include "../DataSource/datasrc.h"
 class jsonserver
 {
@@ -11,7 +12,7 @@ private:
   std::future<void> thread;
   std::mutex mtx;
   std::unordered_set<void*> users;
-  std::unordered_set<DataSource*> dataSources;
+  std::vector<DataSource*> dataSources;
 
   /* data */
 public:
@@ -20,6 +21,7 @@ public:
   int start(int port);
   int stop();
   int addDataSource(DataSource &ds);
+  crow::json::wvalue getVariable(std::string);  
 };
 
 #endif // JSONSERVER

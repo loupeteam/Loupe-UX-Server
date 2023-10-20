@@ -15,7 +15,8 @@ public:
   void getGlobalSymbolInfo();
   void getDatatypeInfo();
   void getSymbolInfo( std::string symbolName );
-  void readSymbolValue( std::string symbolName );
+  void readSymbolValue( std::string symbolName ); 
+  crow::json::wvalue getVariable(std::string symbolName);  
 };
 
 #endif // ADSDATASRC_H

@@ -19,9 +19,8 @@ int main(int argc, char const *argv[])
 
 
   jsonserver server;
-
-  server.start( 80 );
   server.addDataSource( dataSource );
+  server.start( 80 );
 
   return 0;
 }

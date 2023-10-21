@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 #include <string_view>
-
+#include "util.h"
 #define ASSERT( x )
 
 //////////////////////////////////////////////////////////////////////
@@ -19,8 +19,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // CAdsParseSymbols
 
-//Converts string to lower in place
-void toLower( std::string &str);
 
 CAdsParseSymbols::CAdsParseSymbols(PVOID pSymbols, UINT nSymSize, PVOID pDatatypes, UINT nDTSize)
 {

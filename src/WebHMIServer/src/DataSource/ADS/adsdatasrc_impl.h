@@ -16,20 +16,70 @@ typedef ULONG *PULONG;
 #include "AdsParseSymbols.h"
 
 
-class dataType_member_impl{
+class dataType_member_base{
 public:
     std::string name;
 	std::string	type;
     unsigned long offset;
     unsigned long size;
-    dataType_member_impl(std::string name, std::string type, unsigned long offset, unsigned long size) : name(name), type(type), offset(offset), size(size) {};
+    dataType_member_base(std::string name, std::string type, unsigned long offset, unsigned long size) : name(name), type(type), offset(offset), size(size) {};
+    virtual bool parse(crow::json::wvalue &variable, void *buffer, unsigned long size ){
+        return false;
+    }
+};
+class  datatype_member : public dataType_member_base{
+public:
+    //Constructor with name, type, offset and size
+    datatype_member(std::string name, std::string type, unsigned long offset, unsigned long size) : dataType_member_base(name, type, offset, size) {};
+    bool parse(crow::json::wvalue &variable, void *buffer, unsigned long size ){
+        return false;
+    }
 };
 
-class dataType_impl{
+
+template <typename T>
+class dataType_member_base_typed : public dataType_member_base{
+public:
+    //Constructor with name, type, offset and size
+    dataType_member_base_typed(std::string name, std::string type, unsigned long offset, unsigned long size) : dataType_member_base(name, type, offset, size) {};
+    bool parse(crow::json::wvalue &variable, void *buffer, unsigned long size) override {
+        if( size == sizeof(T) ){
+            variable[name] = *(T*)buffer;
+            return true;
+        }
+        return false;
+    }
+};
+
+class dataType_member_string : public dataType_member_base{
+public:
+    //Constructor with name, type, offset and size
+    dataType_member_string(std::string name, std::string type, unsigned long offset, unsigned long size) : dataType_member_base(name, type, offset, size) {};
+    bool parse(crow::json::wvalue &variable, void *buffer, unsigned long size) override {
+        if( size > 0 ){
+            variable[name] = std::string((char*)buffer, size);
+            return true;
+        }
+        return false;
+    }
+};
+
+class dataType_member_unsupported : public dataType_member_base{
+public:
+    //Constructor with name, type, offset and size
+    dataType_member_unsupported(std::string name, std::string type, unsigned long offset, unsigned long size) : dataType_member_base(name, type, offset, size) {};
+    bool parse(crow::json::wvalue &variable, void *buffer, unsigned long size) override {
+        variable[name] = "Unsupported type";
+        return true;
+    }
+};
+
+
+class dataType{
 public:
     bool valid;
     std::string name;
-    std::vector<dataType_member_impl> members;  
+    std::vector<dataType_member_base*> members;  
 };
 
 class adsdatasrc_impl {
@@ -41,12 +91,12 @@ public:
     PAmsAddr             pAddr = &Addr; 
     AdsSymbolUploadInfo  tAdsSymbolUploadInfo; 
     
-    std::unordered_map<std::string, dataType_impl> dataTypes;
+    std::unordered_map<std::string, dataType> dataTypes;
     crow::json::wvalue   symbolData;
     crow::json::wvalue   symbolInfo;
     crow::json::wvalue& findInfo(std::string& symbolName);    
     crow::json::wvalue& findValue(std::string& symbolName);    
-    dataType_impl& getType( std::string& typeName );
+    dataType& getType( std::string& typeName );
     void getMemberInfo( CAdsSymbolInfo Entry );
     void getMemberInfo( PAdsDatatypeEntry Entry, std::string prefix );
 

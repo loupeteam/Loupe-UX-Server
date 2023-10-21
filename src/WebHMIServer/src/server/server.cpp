@@ -14,14 +14,13 @@ int main(int argc, char const *argv[])
   adsdatasrc dataSource;
   dataSource.getGlobalSymbolInfo();
   dataSource.getDatatypeInfo();
-  dataSource.getSymbolInfo( "Main.lift1.configuration");
-  dataSource.readSymbolValue( "Main.lift1.configuration");
+//  dataSource.getSymbolInfo( "Main.lift1.configuration");
+//  dataSource.readSymbolValue( "Main.lift1.configuration");
 
 
   jsonserver server;
   server.addDataSource( dataSource );
-  server.start( 80 );
-
+  server.start( 8000, false );
   return 0;
 }
   

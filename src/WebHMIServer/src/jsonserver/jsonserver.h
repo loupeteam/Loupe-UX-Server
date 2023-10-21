@@ -18,7 +18,7 @@ private:
 public:
   jsonserver(/* args */);
   ~jsonserver();
-  int start(int port);
+  int start(int port, bool async = true);
   int stop();
   int addDataSource(DataSource &ds);
   crow::json::wvalue getVariable(std::string);  

@@ -12,41 +12,50 @@ int jsonserver::stop() {
   return 0;
 }
 
-int jsonserver::start( int port ) {
+int jsonserver::start( int port, bool async ) {
 
   auto pApp = new crow::SimpleApp();
+  this->app = pApp;
 
   CROW_WEBSOCKET_ROUTE((*pApp), "/")
       .onopen([&](crow::websocket::connection &conn) {
         CROW_LOG_INFO << "new websocket connection from "
                       << conn.get_remote_ip();
         std::lock_guard<std::mutex> _(mtx);
-        this->users.insert(&conn);
+//        this->users.insert(&conn);
       })
       .onclose(
           [&](crow::websocket::connection &conn, const std::string &reason) {
             CROW_LOG_INFO << "websocket connection closed: " << reason;
             std::lock_guard<std::mutex> _(mtx);
-            users.erase(&conn);
+//            users.erase(&conn);
           })
       .onmessage([&](crow::websocket::connection &conn, const std::string &data,
                      bool is_binary) {
         std::lock_guard<std::mutex> _(mtx);
-        crow::json::wvalue x = crow::json::load(data);
+        crow::json::rvalue message = crow::json::load(data);
+        crow::json::rvalue variables = message["data"];
+
+        crow::json::wvalue x;
         x["type"] = "readresponse";
-        crow::json::wvalue variable = x["data"];
-        for (size_t i = 0; i < variable.keys().size(); i++)
-        {
-//          x["data"] = variable.
+        x["data"].empty_object();
+
+        //Go through all the array values and add them to the response
+        for (auto &v : variables) {
+          std::string key = v.s();
+          x["data"][key] = this->getVariable(key);
         }
         
-
         conn.send_text(x.dump());
       });
 
-  thread = pApp->port(port)
-  .run_async();
-  this->app = pApp;
+  if( async){
+    thread = pApp->port(port)
+    .run_async();
+  }
+  else{
+    pApp->port(port).run();    
+  }
   return 0;
 }
 

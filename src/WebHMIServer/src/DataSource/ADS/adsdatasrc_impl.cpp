@@ -42,16 +42,12 @@ void adsdatasrc_impl::getMemberInfo( PAdsDatatypeEntry Entry, string prefix ){
   }    
 }
 
-
-dataType_impl& adsdatasrc_impl::getType( std::string& typeName ){
-  dataType_impl *dt = &this->dataTypes[typeName];
+dataType& adsdatasrc_impl::getType( std::string& typeName ){
+  dataType *dt = &this->dataTypes[typeName];
   if( dt == NULL ){
-    dt = &this->dataTypes.emplace(typeName, dataType_impl{}).first->second;
+    dt = &this->dataTypes.emplace(typeName, dataType{}).first->second;
     dt->name = typeName;
     dt->valid = false;
-
-
-
   }
   return *dt;
 }
@@ -67,7 +63,7 @@ crow::json::wvalue& adsdatasrc_impl::findInfo(std::string& symbolName){
 crow::json::wvalue& adsdatasrc_impl::findValue(std::string& symbolName){
   crow::json::wvalue & ret = find(symbolName, this->symbolData, false);  
   if( ret.keys().size() == 0 ){
-    find(symbolName, this->symbolData, false);
+    find(symbolName, this->symbolInfo, true);
   }
   return ret;
 }
@@ -79,12 +75,18 @@ crow::json::wvalue& adsdatasrc_impl::find(std::string symbolName, crow::json::wv
   for( int i = 1; i < path.size(); i++){
     crow::json::wvalue *data;
     if(value){
-       data = &(*ret)["value"];
+       data = &(*ret)["value"];       
     }
     else{
         data = ret;
     }
     ret = &(*data)[path[i]];
+  }
+  //Check if the value has anything in it
+  if( ret->keys().size() == 0 ){
+
+//    this->getMemberInfo( symbolName );
+    
   }   
   return *ret;
 }

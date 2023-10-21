@@ -8,6 +8,7 @@ private:
     void * _impl;
     void ParseSymbols(void* pSymbols, unsigned int nSymSize );
     void ParseDatatypes(void* pDatatypes, unsigned int nDTSize);
+    bool ready = 0;
 public:
   adsdatasrc(/* args */);
   ~adsdatasrc();
@@ -15,7 +16,8 @@ public:
   void getGlobalSymbolInfo();
   void getDatatypeInfo();
   void getSymbolInfo( std::string symbolName );
-  void readSymbolValue( std::string symbolName ); 
+  void readSymbolValue( std::string symbolName );
+  void parseBuffer(crow::json::wvalue &variable, std::string &datatype, void *buffer, unsigned long size );
   crow::json::wvalue getVariable(std::string symbolName);  
 };
 

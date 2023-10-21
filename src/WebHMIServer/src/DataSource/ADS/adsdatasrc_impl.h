@@ -3,6 +3,7 @@
 
 
 #include <string.h>
+#include <codecvt>
 
 typedef int BOOL;
 typedef unsigned long ULONG;
@@ -57,7 +58,35 @@ public:
     dataType_member_string(std::string name, std::string type, unsigned long offset, unsigned long size) : dataType_member_base(name, type, offset, size) {};
     bool parse(crow::json::wvalue &variable, void *buffer, unsigned long size) override {
         if( size > 0 ){
-            variable[name] = std::string((char*)buffer, size);
+            variable[name] = std::string((char*)buffer);
+            return true;
+        }
+        return false;
+    }
+};
+
+class dataType_member_enum : public dataType_member_base{
+public:
+    //Constructor with name, type, offset and size
+    dataType_member_enum(std::string name, std::string type, unsigned long offset, unsigned long size) : dataType_member_base(name, type, offset, size) {};
+    bool parse(crow::json::wvalue &variable, void *buffer, unsigned long size) override {
+        if( size > 0 ){
+            variable[name] = *(uint32_t*)buffer;
+            return true;
+        }
+        return false;
+    }
+};
+
+class dataType_member_wstring : public dataType_member_base{
+public:
+    //Constructor with name, type, offset and size
+    dataType_member_wstring(std::string name, std::string type, unsigned long offset, unsigned long size) : dataType_member_base(name, type, offset, size) {};
+    bool parse(crow::json::wvalue &variable, void *buffer, unsigned long size) override {
+        if( size > 0 ){
+            //Convert from a wstring to a string.
+            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+            variable[name] = converter.to_bytes((wchar_t*)buffer);
             return true;
         }
         return false;
@@ -69,7 +98,16 @@ public:
     //Constructor with name, type, offset and size
     dataType_member_unsupported(std::string name, std::string type, unsigned long offset, unsigned long size) : dataType_member_base(name, type, offset, size) {};
     bool parse(crow::json::wvalue &variable, void *buffer, unsigned long size) override {
-        variable[name] = "Unsupported type";
+        variable[name] = "UNSUPPORTED: " + type;
+        return true;
+    }
+};
+class dataType_member_pointer : public dataType_member_base{
+public:
+    //Constructor with name, type, offset and size
+    dataType_member_pointer(std::string name, std::string type, unsigned long offset, unsigned long size) : dataType_member_base(name, type, offset, size) {};
+    bool parse(crow::json::wvalue &variable, void *buffer, unsigned long size) override {
+        variable[name] = "Pointer to: " + type;
         return true;
     }
 };

@@ -90,6 +90,7 @@ void adsdatasrc::getDatatypeInfo() {
   AdsSymbolUploadInfo2 info;
   long nResult = AdsSyncReadReq(impl->pAddr, ADSIGRP_SYM_UPLOADINFO2, 0,
                                 sizeof(info), &info);
+  unordered_map<string, bool> warns;
   if (nResult == ADSERR_NOERR) {
     // size of symbol information
     PBYTE pSym = new BYTE[info.nSymSize];
@@ -120,8 +121,7 @@ void adsdatasrc::getDatatypeInfo() {
     delete[] pDT;
     UINT count = impl->parsedSymbols->DatatypeCount();
     for (int i = 0; i < count; i++) {
-      PAdsDatatypeEntry pAdsDatatypeEntry =
-          impl->parsedSymbols->GetTypeByIndex(i);
+      PAdsDatatypeEntry pAdsDatatypeEntry = impl->parsedSymbols->GetTypeByIndex(i);
       string typeName = PADSDATATYPENAME(pAdsDatatypeEntry);
       dataType &dt = impl->getType(typeName);
       if (dt.valid) {
@@ -131,44 +131,63 @@ void adsdatasrc::getDatatypeInfo() {
       dt.name = typeName;
       dt.members.clear();
 
-      for (int j = 0;
-           j < impl->parsedSymbols->SubSymbolCount(pAdsDatatypeEntry); j++) {
+      for (int j = 0;j < impl->parsedSymbols->SubSymbolCount(pAdsDatatypeEntry); j++) {
         CAdsSymbolInfo info;
         impl->parsedSymbols->SubSymbolInfo(pAdsDatatypeEntry, j, info);
 
-        if(info.type == "BOOL" || info.type == "BIT" || info.type == "BIT8"){
-          dt.members.push_back(new dataType_member_base_typed<bool>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "STRING" || info.type == "WSTRING" ){
+        if(info.type._Starts_with("STRING")){
           dt.members.push_back(new dataType_member_string{info.name, info.type, info.iOffs, info.size});
         }
-        else if(info.type == "WORD"){
-          dt.members.push_back(new dataType_member_base_typed<WORD>{info.name, info.type, info.iOffs, info.size});
+        else if(info.type._Starts_with("WSTRING")){
+          dt.members.push_back(new dataType_member_wstring{info.name, info.type, info.iOffs, info.size});
         }
-        else if(info.type == "DWORD"){
-          dt.members.push_back(new dataType_member_base_typed<DWORD>{info.name, info.type, info.iOffs, info.size});
+        else if(info.type == "BOOL" || info.type == "BIT" || info.type == "BIT8"){
+          dt.members.push_back(new dataType_member_base_typed<bool>{info.name, info.type, info.iOffs, info.size});
         }
-        else if(info.type == "BYTE"){
-          dt.members.push_back(new dataType_member_base_typed<BYTE>{info.name, info.type, info.iOffs, info.size});
+        else if(info.type == "BYTE" || info.type == "USINT" || info.type == "BITARR8" || info.type == "UINT8"){
+          dt.members.push_back(new dataType_member_base_typed<uint8_t>{info.name, info.type, info.iOffs, info.size});
         }
-        else if(info.type == "INT"){
-          dt.members.push_back(new dataType_member_base_typed<INT>{info.name, info.type, info.iOffs, info.size});
+        else if(info.type == "SINT" || info.type == "INT8" ){
+          dt.members.push_back(new dataType_member_base_typed<int8_t>{info.name, info.type, info.iOffs, info.size});
         }
-        else if(info.type == "DINT"){
-          dt.members.push_back(new dataType_member_base_typed<long int>{info.name, info.type, info.iOffs, info.size});
+        else if(info.type == "UINT" || info.type == "WORD" || info.type == "BITARR16" || info.type == "UINT16"){
+          dt.members.push_back(new dataType_member_base_typed<uint16_t>{info.name, info.type, info.iOffs, info.size});
         }
-
-        else if(info.type == "FLOAT" || info.type == "REAL"){
+        else if(info.type == "INT" || info.type == "INT16"){
+          dt.members.push_back(new dataType_member_base_typed<int16_t>{info.name, info.type, info.iOffs, info.size});
+        }
+        else if(info.type == "ENUM" ){
+          dt.members.push_back(new dataType_member_enum{info.name, info.type, info.iOffs, info.size});
+        }
+        else if(info.type == "DINT" || info.type == "INT32"){
+          dt.members.push_back(new dataType_member_base_typed<int32_t>{info.name, info.type, info.iOffs, info.size});
+        }
+        else if(info.type == "UDINT" || info.type == "DWORD" || info.type == "TIME" || info.type == "TIME_OF_DAY" || info.type == "TOD" || info.type == "BITARR32" || info.type == "UINT32"){
+          dt.members.push_back(new dataType_member_base_typed<uint32_t>{info.name, info.type, info.iOffs, info.size});
+        }
+        else if(info.type == "DATE_AND_TIME" || info.type == "DT" || info.type == "DATE" ){
+          dt.members.push_back(new dataType_member_base_typed<uint32_t>{info.name, info.type, info.iOffs, info.size});
+        }
+        else if(info.type == "REAL" || info.type == "FLOAT"){
           dt.members.push_back(new dataType_member_base_typed<float>{info.name, info.type, info.iOffs, info.size});
         }
-        else if(info.type == "LREAL" || info.type == "DOUBLE"){
+        else if(info.type == "DOUBLE" || info.type == "LREAL" ){
           dt.members.push_back(new dataType_member_base_typed<double>{info.name, info.type, info.iOffs, info.size});
         }
-        else if(info.type == "POINTER TO STRING(80)"){
-          dt.members.push_back(new dataType_member_unsupported{info.name, info.type, info.iOffs, info.size});
+        else if(info.type == "LWORD" || info.type == "ULINT" || info.type == "LTIME" || info.type == "UINT64" ){
+          dt.members.push_back(new dataType_member_base_typed<uint64_t>{info.name, info.type, info.iOffs, info.size});
+        }
+        else if(info.type == "LINT" || info.type == "INT64" ){
+          dt.members.push_back(new dataType_member_base_typed<int64_t>{info.name, info.type, info.iOffs, info.size});
+        }
+        else if(info.type._Starts_with("POINTER") ){
+          dt.members.push_back(new dataType_member_pointer{info.name, info.type, info.iOffs, info.size});
         }
         else{
-          cout << "Unknown type: " << info.type << '\n' <<std::flush;
+          if( warns.find(info.type) == warns.end() ){
+            cout << "Unknown type: " << info.type << '\n' <<std::flush;
+            warns[info.type] = true;
+          }
           dt.members.push_back(new datatype_member{info.name, info.type, info.iOffs, info.size});
         }
       }

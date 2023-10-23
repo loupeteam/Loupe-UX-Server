@@ -38,14 +38,15 @@ int jsonserver::start( int port, bool async ) {
 
         crow::json::wvalue x;
         x["type"] = "readresponse";
-        x["data"].empty_object();
-
+        crow::json::wvalue::list variablesList;
         //Go through all the array values and add them to the response
         for (auto &v : variables) {
           std::string key = v.s();
-          x["data"][key] = this->getVariable(key);
+          crow::json::wvalue variable;
+          variable[key] = this->getVariable(key);
+          variablesList.push_back(variable);
         }
-        
+        x["data"] = crow::json::wvalue(variablesList);
         conn.send_text(x.dump());
       });
 

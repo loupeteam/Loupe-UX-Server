@@ -8,7 +8,7 @@ using namespace std;
 
 //Converts string to lower in place
 void toLower( string &str){
-  std::transform(str.begin(), str.end(), str.begin(),[](unsigned char c){ return std::tolower(c); });
+//  std::transform(str.begin(), str.end(), str.begin(),[](unsigned char c){ return std::tolower(c); });
 }
 //Returns an array of strings split by delim
 std::vector<std::string> split( string &str, char delim){

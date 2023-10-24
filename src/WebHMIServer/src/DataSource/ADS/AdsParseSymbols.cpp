@@ -72,6 +72,9 @@ CAdsParseSymbols::CAdsParseSymbols(PVOID pSymbols, UINT nSymSize, PVOID pDatatyp
 		}
 		ASSERT(offs==nDTSize);
 	}
+
+//	DumpSymbols();
+//	DumpDatatypes();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,24 +90,17 @@ CAdsParseSymbols::~CAdsParseSymbols()
 		delete m_ppDatatypeArray;
 }
 
-static int _cdecl CompareDTByName( const void* p1, const void* p2 )
-{
-	return strcmp( (char*)((*(PPAdsDatatypeEntry)p1)+1), (char*)((*(PPAdsDatatypeEntry)p2)+1) );
-}
-
 PAdsDatatypeEntry	CAdsParseSymbols::GetTypeByName(std::string sType)
 {
 	PAdsDatatypeEntry pKey = (PAdsDatatypeEntry)m_bufGetTypeByNameBuffer;
-	strcpy((PCHAR)(pKey+1), sType.c_str());
 
-	// serach data type by name
-	PPAdsDatatypeEntry	ppEntry = (PPAdsDatatypeEntry)bsearch(&pKey, m_ppDatatypeArray, m_nDatatypes, 
-		sizeof(*m_ppDatatypeArray), CompareDTByName);
-
-	if ( ppEntry )
-		return *ppEntry;
-	else
-		return NULL;
+	//Go through the data types and find the one that matches the name
+	for( int i = 0; i < m_nDatatypes; i++ ){
+		if( sType == PADSDATATYPENAME(m_ppDatatypeArray[i]) ){
+			return m_ppDatatypeArray[i];
+		}
+	}
+	return NULL;
 }
 
 PAdsDatatypeEntry	CAdsParseSymbols::GetTypeByIndex(UINT sym)
@@ -322,7 +318,7 @@ BOOL	CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymb
 			if ( pSEntry )
 			{
 				info.iGrp		= 0;
-				info.iOffs		= pSEntry->offs;
+				info.offs		= pSEntry->offs;
 				info.size		= pSEntry->size;
 				info.dataType	= pSEntry->dataType;
 				info.flags		= pSEntry->flags;
@@ -330,6 +326,7 @@ BOOL	CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymb
 				info.fullname   = info.name;
 				info.type		= PADSDATATYPETYPE(pSEntry);
 				info.comment	= PADSDATATYPECOMMENT(pSEntry);
+				info.isProperty = pSEntry->offsGetCode != 0 || pSEntry->offsSetCode != 0;
 				return TRUE;
 			}
 		}
@@ -357,18 +354,7 @@ BOOL	CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymb
 				info.flags		= pEntry->flags;
 				info.type		= PADSDATATYPETYPE(pEntry);
 				info.comment	= PADSDATATYPECOMMENT(pEntry);
-/* TODO
-				CString arr='[', tmp;
-				for ( int i = 0; i < pEntry->arrayDim; i++ )
-				{
-					tmp.Format(_T("%d"), pAI[i].lBound + sub / x[i+1]);
-					arr	+= tmp;
-					arr	+= (i==pEntry->arrayDim-1) ? ']' : ',';
-					info.iOffs	+= baseSize * x[i+1] * (sub/x[i+1]);
-					sub %= x[i+1];
-				}
-*/				
-				info.name		= std::string(PADSSYMBOLNAME(pEntry)) + "[" + std::to_string(sub) + "]";
+				info.name		= std::to_string(sub);
 				info.fullname	= std::string(PADSSYMBOLNAME(pEntry)) + info.name;
 				return TRUE;
 			}
@@ -377,3 +363,34 @@ BOOL	CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymb
 	return FALSE;
 }
 
+void CAdsParseSymbols::DumpDatatypes(){
+	//Go through all the data types and COUT them
+	for( int i = 0; i < m_nDatatypes; i++ ){
+		std::cout << "Name: " << PADSDATATYPENAME(m_ppDatatypeArray[i]) << "\n";
+		std::cout << "Type: " << PADSDATATYPETYPE(m_ppDatatypeArray[i]) << "\n";
+		std::cout << "Comment: " << PADSDATATYPECOMMENT(m_ppDatatypeArray[i]) << "\n";
+		std::cout << "Size: " << m_ppDatatypeArray[i]->size << "\n";
+		std::cout << "SubItems: " << m_ppDatatypeArray[i]->subItems << "\n";
+		std::cout << "ArrayDim: " << m_ppDatatypeArray[i]->arrayDim << "\n";
+		std::cout << "Flags: " << m_ppDatatypeArray[i]->flags << "\n";
+		std::cout << "DataType: " << m_ppDatatypeArray[i]->dataType << "\n";
+		std::cout << "Offs: " << m_ppDatatypeArray[i]->offs << "\n";
+		std::cout << "-----------------------------------\n";
+	}
+}
+
+void CAdsParseSymbols::DumpSymbols(){
+	//Go through all the symbols and COUT them
+	for( int i = 0; i < m_nSymbols; i++ ){
+		std::cout << "Name: " << PADSSYMBOLNAME(m_ppSymbolArray[i]) << "\n";
+		std::cout << "Type: " << PADSSYMBOLTYPE(m_ppSymbolArray[i]) << "\n";
+		std::cout << "Comment: " << PADSSYMBOLCOMMENT(m_ppSymbolArray[i]) << "\n";
+		std::cout << "Size: " << m_ppSymbolArray[i]->size << "\n";
+//		std::cout << "SubItems: " << m_ppSymbolArray[i]->subItems << "\n";
+//		std::cout << "ArrayDim: " << m_ppSymbolArray[i]->arrayDim << "\n";
+		std::cout << "Flags: " << m_ppSymbolArray[i]->flags << "\n";
+		std::cout << "DataType: " << m_ppSymbolArray[i]->dataType << "\n";
+		std::cout << "Offs: " << m_ppSymbolArray[i]->iOffs << "\n";
+		std::cout << "-----------------------------------\n";
+	}
+}

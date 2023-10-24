@@ -14,6 +14,7 @@ class CAdsSymbolInfo
 {
 public:
 	CAdsSymbolInfo() : m_pEntry(NULL) {};
+	bool		isProperty;				// 
 	ULONG		iGrp;				// 
 	ULONG		iOffs;			// 
 	ULONG		size;				// size of datatype ( in bytes )
@@ -61,6 +62,10 @@ public:
 
 	virtual	PAdsDatatypeEntry	GetTypeByName(std::string sType);
 	virtual	PAdsDatatypeEntry	GetTypeByIndex(UINT sym);
+
+	virtual void DumpSymbols();
+	virtual void DumpDatatypes();
+
 protected:	
 	PBYTE							m_pSymbols;
 	PBYTE							m_pDatatypes;

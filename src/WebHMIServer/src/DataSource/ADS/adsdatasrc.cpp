@@ -33,18 +33,6 @@ adsdatasrc::~adsdatasrc() {
   delete impl;
 }
 
-PAdsSymbolEntry populateSymbolInfo(crow::json::wvalue &symbol,
-                                   std::string &symbolName,
-                                   PAdsSymbolEntry pAdsSymbolEntry) {
-  symbol["name"] = symbolName;
-  symbol["group"] = pAdsSymbolEntry->iGroup;
-  symbol["offset"] = pAdsSymbolEntry->iOffs;
-  symbol["size"] = pAdsSymbolEntry->size;
-  symbol["type"] = PADSSYMBOLTYPE(pAdsSymbolEntry);
-  symbol["comment"] = PADSSYMBOLCOMMENT(pAdsSymbolEntry);
-  return PADSNEXTSYMBOLENTRY(pAdsSymbolEntry);
-}
-
 void adsdatasrc::getGlobalSymbolInfo() {
   char *pchSymbols = NULL;
 
@@ -123,105 +111,24 @@ void adsdatasrc::getDatatypeInfo() {
     for (int i = 0; i < count; i++) {
       PAdsDatatypeEntry pAdsDatatypeEntry = impl->parsedSymbols->GetTypeByIndex(i);
       string typeName = PADSDATATYPENAME(pAdsDatatypeEntry);
-      dataType &dt = impl->getType(typeName);
-      if (dt.valid) {
+      dataType_member_base *dt = impl->getType(typeName);
+      if (dt->valid) {
         continue;
       }
-      dt.valid = true;
-      dt.name = typeName;
-      dt.members.clear();
-
+      dt->name = typeName;
+//      impl->PopulateChildren(dt);
+/*
       for (int j = 0;j < impl->parsedSymbols->SubSymbolCount(pAdsDatatypeEntry); j++) {
         CAdsSymbolInfo info;
         impl->parsedSymbols->SubSymbolInfo(pAdsDatatypeEntry, j, info);
-
-        if(info.type._Starts_with("STRING")){
-          dt.members.push_back(new dataType_member_string{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type._Starts_with("WSTRING")){
-          dt.members.push_back(new dataType_member_wstring{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "BOOL" || info.type == "BIT" || info.type == "BIT8"){
-          dt.members.push_back(new dataType_member_base_typed<bool>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "BYTE" || info.type == "USINT" || info.type == "BITARR8" || info.type == "UINT8"){
-          dt.members.push_back(new dataType_member_base_typed<uint8_t>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "SINT" || info.type == "INT8" ){
-          dt.members.push_back(new dataType_member_base_typed<int8_t>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "UINT" || info.type == "WORD" || info.type == "BITARR16" || info.type == "UINT16"){
-          dt.members.push_back(new dataType_member_base_typed<uint16_t>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "INT" || info.type == "INT16"){
-          dt.members.push_back(new dataType_member_base_typed<int16_t>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "ENUM" ){
-          dt.members.push_back(new dataType_member_enum{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "DINT" || info.type == "INT32"){
-          dt.members.push_back(new dataType_member_base_typed<int32_t>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "UDINT" || info.type == "DWORD" || info.type == "TIME" || info.type == "TIME_OF_DAY" || info.type == "TOD" || info.type == "BITARR32" || info.type == "UINT32"){
-          dt.members.push_back(new dataType_member_base_typed<uint32_t>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "DATE_AND_TIME" || info.type == "DT" || info.type == "DATE" ){
-          dt.members.push_back(new dataType_member_base_typed<uint32_t>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "REAL" || info.type == "FLOAT"){
-          dt.members.push_back(new dataType_member_base_typed<float>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "DOUBLE" || info.type == "LREAL" ){
-          dt.members.push_back(new dataType_member_base_typed<double>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "LWORD" || info.type == "ULINT" || info.type == "LTIME" || info.type == "UINT64" ){
-          dt.members.push_back(new dataType_member_base_typed<uint64_t>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type == "LINT" || info.type == "INT64" ){
-          dt.members.push_back(new dataType_member_base_typed<int64_t>{info.name, info.type, info.iOffs, info.size});
-        }
-        else if(info.type._Starts_with("POINTER") ){
-          dt.members.push_back(new dataType_member_pointer{info.name, info.type, info.iOffs, info.size});
-        }
-        else{
-          if( warns.find(info.type) == warns.end() ){
-            cout << "Unknown type: " << info.type << '\n' <<std::flush;
-            warns[info.type] = true;
-          }
-          dt.members.push_back(new datatype_member{info.name, info.type, info.iOffs, info.size});
-        }
+        auto parser = datatype_member::parserForType(info.name, info.type, info.offs, info.size);
+        parser->isMember = true;
+        dt->members.push_back(parser);
       }
+*/    
     }
   }
 }
-/*
-void adsdatasrc::getSymbolInfo2( std::string symbolName){
-
-  //Check to see if the symbol exists
-  crow::json::wvalue &symbol = impl->findInfo( symbolName );
-  if (symbol.keys().size() == 0) {
-    BYTE buffer[0xFFFF];
-    long nErr = AdsSyncReadWriteReq(
-        impl->pAddr, ADSIGRP_SYM_INFOBYNAMEEX, 0, sizeof(buffer), buffer,
-        symbolName.length() + 1, (void*)symbolName.c_str());
-    if (nErr) {
-      cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
-    } else {
-      PAdsSymbolEntry pAdsSymbolEntry = (PAdsSymbolEntry)buffer;
-      populuteSymbolInfo(symbol, symbolName, pAdsSymbolEntry);
-      int nElements = pAdsSymbolEntry->size/sizeof(unsigned long);
-      unsigned long *pVal = new unsigned long[nElements];
-      AdsSyncReadReq(impl->pAddr, pAdsSymbolEntry->iGroup,
-pAdsSymbolEntry->iOffs, pAdsSymbolEntry->size, pVal); cout << "Value: " << pVal
-<< '\n';;
-    }
-  }
-  cout << "Symbol: " << symbolName << '\n';
-  cout <<  "info: " << impl->findInfo( symbolName ).dump() << '\n';
-  cout <<  "value: " << impl->findValue( symbolName ).dump() << '\n';
-
-}
-*/
 
 void adsdatasrc::getSymbolInfo(std::string symbolName) {
 
@@ -237,21 +144,13 @@ void adsdatasrc::getSymbolInfo(std::string symbolName) {
   impl->getMemberInfo(Entry);
 }
 
-
 void adsdatasrc::parseBuffer(crow::json::wvalue &variable, string &datatype, void *gbuffer, unsigned long size ){
   
   byte *buffer = (byte*)gbuffer;
 
-  dataType info = impl->getType( datatype );
-  //Go through all the members and parse them
-  for( dataType_member_base *member : info.members){
-    dataType  &memberInfo =  impl->getType( member->type );
-    if( memberInfo.valid ){
-      if( !member->parse( variable, buffer + member->offset, member->size ) ){
-        parseBuffer( variable[member->name], member->type, buffer + member->offset, member->size );
-      }
-    }
-  }
+  dataType_member_base* info = impl->getType( datatype );
+
+  info->parse( variable, buffer, size );
 }
 
 void adsdatasrc::readSymbolValue(std::string symbolName) {
@@ -265,9 +164,8 @@ void adsdatasrc::readSymbolValue(std::string symbolName) {
   crow::json::wvalue_reader sizereader{ref(info["size"])};
   crow::json::wvalue_reader type{ref(info["type"])};
   unsigned long size = sizereader.get((int64_t)0);
-  byte *buffer = new byte[size];
-
-
+  BYTE *buffer = new BYTE[size];
+  memset(buffer, 0, size);
   // Read a variable from ADS
   long nResult = AdsSyncReadReq(impl->pAddr, group.get((int64_t)0),
                                 offset.get((int64_t)0), size, buffer);
@@ -344,13 +242,15 @@ void adsdatasrc::ParseDatatypes(void *pDatatypes, unsigned int nDTSize) {
 
 crow::json::wvalue adsdatasrc::getVariable(std::string symbolName) {
 
+  crow::json::wvalue value = impl->findValue(symbolName);
+  crow::json::wvalue &info = impl->findInfo(symbolName);
+  crow::json::wvalue_reader valid{ref(info["valid"])};
+  if( valid.get(false) == false) {
+    getSymbolInfo(symbolName); 
+    info["valid"] = true;
+  }
+
   readSymbolValue(symbolName);
 
-  crow::json::wvalue value = impl->findValue(symbolName);
-  if (value.keys().size() == 0) {
-    getSymbolInfo(symbolName);
-    return impl->findValue(symbolName);
-  } else {
-    return value;
-  }
+  return value;
 }

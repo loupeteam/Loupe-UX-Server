@@ -1,3 +1,3 @@
-machine.initCyclicRead('main.Lift1')
-machine.initCyclicRead("main.Picker1")
+machine.initCyclicRead('MAIN.Lift1')
+machine.initCyclicRead("MAIN.Picker1")
 

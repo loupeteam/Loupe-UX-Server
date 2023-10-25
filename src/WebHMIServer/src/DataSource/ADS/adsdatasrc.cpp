@@ -116,16 +116,6 @@ void adsdatasrc::getDatatypeInfo() {
         continue;
       }
       dt->name = typeName;
-//      impl->PopulateChildren(dt);
-/*
-      for (int j = 0;j < impl->parsedSymbols->SubSymbolCount(pAdsDatatypeEntry); j++) {
-        CAdsSymbolInfo info;
-        impl->parsedSymbols->SubSymbolInfo(pAdsDatatypeEntry, j, info);
-        auto parser = datatype_member::parserForType(info.name, info.type, info.offs, info.size);
-        parser->isMember = true;
-        dt->members.push_back(parser);
-      }
-*/    
     }
   }
 }
@@ -153,6 +143,69 @@ void adsdatasrc::parseBuffer(crow::json::wvalue &variable, string &datatype, voi
   info->parse( variable, buffer, size );
 }
 
+
+void adsdatasrc::updateVariables( std::vector<std::string> symbolNames ){
+    if (!ready) {
+      return;
+    }
+    unsigned long size = 0;
+    long reqNum = symbolNames.size();
+    dataPar *parReq = new dataPar[symbolNames.size()];
+    dataPar *parReqPop = parReq;
+    for( auto symbolName : symbolNames){
+      crow::json::wvalue info = impl->findInfo(symbolName);
+      crow::json::wvalue_reader group{ref(info["group"])};
+      crow::json::wvalue_reader offset{ref(info["offset"])};
+      crow::json::wvalue_reader sizereader{ref(info["size"])};
+      crow::json::wvalue_reader type{ref(info["type"])};
+      parReqPop->indexGroup = group.get((int64_t)0);
+      parReqPop->indexOffset = offset.get((int64_t)0);
+      parReqPop->length = sizereader.get((int64_t)0);
+      parReqPop++;
+      size += sizereader.get((int64_t)0);
+    }
+
+    BYTE *buffer = new BYTE[size + 4*reqNum];
+
+    //Measure time for ADS-Read
+    auto start = std::chrono::high_resolution_clock::now();
+
+    
+    // Read a variable from ADS
+    long nResult = AdsSyncReadWriteReq(impl->pAddr, 
+                                    0xf080, // Sum-Command, response will contain ADS-error code for each ADS-Sub-command
+                                    reqNum, // Number of ADS-Sub-commands
+                                    4*reqNum + size, // we request additional "error"-flag(long) for each ADS-sub commands
+                                    buffer, // pointer to buffer for ADS-data
+                                    12*reqNum, // send 12 bytes (3 * long : IG, IO, Len) of each ADS-sub command
+                                    parReq); // pointer to buffer for ADS-commands
+
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+    std::cout << "ADS-Read: " << elapsed.count() << " s\n" << std::flush;
+
+
+    if (nResult == ADSERR_NOERR) {
+      PBYTE pObjAdsRes = (BYTE*)buffer + (reqNum*4);	// point to ADS-data
+      PBYTE pObjAdsErrRes = (BYTE*)buffer;				// point to ADS-err
+      PBYTE pdata = pObjAdsRes;
+      for( auto symbolName : symbolNames){
+        crow::json::wvalue &var = impl->findValue(symbolName);
+        crow::json::wvalue info = impl->findInfo(symbolName);
+        crow::json::wvalue_reader sizereader{ref(info["size"])};
+        crow::json::wvalue_reader type{ref(info["type"])};
+
+        parseBuffer(var, type.get(string("")), pdata, sizereader.get((int64_t)0));                                
+        pdata += sizereader.get((int64_t)0);
+      }
+    } else {
+      cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
+    }
+
+    delete[] buffer;
+    delete[] parReq;
+  }
+  
 void adsdatasrc::readSymbolValue(std::string symbolName) {
   if (!ready) {
     return;
@@ -165,29 +218,19 @@ void adsdatasrc::readSymbolValue(std::string symbolName) {
   crow::json::wvalue_reader type{ref(info["type"])};
   unsigned long size = sizereader.get((int64_t)0);
   BYTE *buffer = new BYTE[size];
-  memset(buffer, 0, size);
+
   // Read a variable from ADS
   long nResult = AdsSyncReadReq(impl->pAddr, group.get((int64_t)0),
                                 offset.get((int64_t)0), size, buffer);
 
-  crow::json::wvalue &var = impl->findValue(symbolName);
-  parseBuffer(var, type.get(string("")), buffer, size);                                
-
   if (nResult == ADSERR_NOERR) {
-//    cout << "Value: " << info.dump() << '\n';
+    crow::json::wvalue &var = impl->findValue(symbolName);
+    parseBuffer(var, type.get(string("")), buffer, size);                                
   } else {
     cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
   }
 
   delete[] buffer;
-
-  // crow::json::wvalue info = impl->findValue(symbolName);
-  // if (info.keys().size() == 0) {
-  //   getSymbolInfo(symbolName);
-  //   std::cout << impl->findValue(symbolName).dump();
-  // } else {
-  //   std::cout << info.dump();
-  // }
 }
 
 void adsdatasrc::ParseSymbols(void *pSymbols, unsigned int nSymSize) {
@@ -250,7 +293,7 @@ crow::json::wvalue adsdatasrc::getVariable(std::string symbolName) {
     info["valid"] = true;
   }
 
-  readSymbolValue(symbolName);
+//  readSymbolValue(symbolName);
 
   return value;
 }

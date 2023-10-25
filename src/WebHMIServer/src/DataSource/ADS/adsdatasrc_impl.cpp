@@ -167,7 +167,7 @@ crow::json::wvalue& adsdatasrc_impl::find(std::string symbolName, crow::json::wv
   //Check if the value has anything in it
   if( ret->keys().size() == 0 ){
 
-    std::cout << "No Keys";
+//    std::cout << "No Keys";
     
   }   
   return *ret;

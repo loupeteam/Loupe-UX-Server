@@ -258,4 +258,11 @@ PAdsSymbolEntry populateSymbolInfo(crow::json::wvalue &symbol,
                                    std::string &symbolName,
                                    PAdsSymbolEntry pAdsSymbolEntry);
 
+typedef struct dataPar
+{
+  unsigned long		indexGroup;	// index group in ADS server interface
+  unsigned long		indexOffset;	// index offset in ADS server interface
+  unsigned long		length;		// count of bytes to read
+};
+
 #endif // ADSDATASRC_IMPL_H

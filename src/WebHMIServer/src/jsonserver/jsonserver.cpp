@@ -38,14 +38,26 @@ int jsonserver::start( int port, bool async ) {
 
         crow::json::wvalue x;
         x["type"] = "readresponse";
-        crow::json::wvalue::list variablesList;
+        crow::json::wvalue::list variablesList;        
+        std::vector<std::string> keys;
+
         //Go through all the array values and add them to the response
+        for(int i=0; i<250; i++){
+          for (auto &v : variables) {
+            std::string key = v.s();
+            keys.push_back(key);
+          }
+        }
+
+        this->dataSources.at(0)->updateVariables(keys);
+
         for (auto &v : variables) {
           std::string key = v.s();
           crow::json::wvalue variable;
           variable[key] = this->getVariable(key);
           variablesList.push_back(variable);
         }
+
         x["data"] = crow::json::wvalue(variablesList);
         conn.send_text(x.dump());
       });
@@ -64,6 +76,7 @@ int jsonserver::addDataSource(DataSource &ds){
   this->dataSources.push_back(&ds);
   return 0;
 }
+
 crow::json::wvalue jsonserver::getVariable(std::string name){
   return this->dataSources.at(0)->getVariable(name);
 }

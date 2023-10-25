@@ -9,6 +9,7 @@ class DataSource {
   /* data */
 public:
 
+  virtual void updateVariables(std::vector<std::string> symbolNames){ };
   virtual crow::json::wvalue getVariable(std::string symbolName){ return crow::json::wvalue{}; };
   
 };

@@ -42,11 +42,9 @@ int jsonserver::start( int port, bool async ) {
         std::vector<std::string> keys;
 
         //Go through all the array values and add them to the response
-        for(int i=0; i<250; i++){
-          for (auto &v : variables) {
-            std::string key = v.s();
-            keys.push_back(key);
-          }
+        for (auto &v : variables) {
+          std::string key = v.s();
+          keys.push_back(key);
         }
 
         this->dataSources.at(0)->updateVariables(keys);

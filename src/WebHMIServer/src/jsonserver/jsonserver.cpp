@@ -97,7 +97,7 @@ int jsonserver::addDataSource(DataSource &ds){
 }
 
 int jsonserver::readVariables( const std::vector<std::string> &keys ){
-  this->dataSources.at(0)->updateVariables(keys);
+  this->dataSources.at(0)->readSymbolValue(keys);
   return 0;
 }
 
@@ -258,5 +258,5 @@ int jsonserver::sendResponse( crow::websocket::connection *conn, const std::vect
 }
 
 crow::json::wvalue jsonserver::getVariable(std::string name){
-  return this->dataSources.at(0)->getVariable(name);
+  return this->dataSources.at(0)->getSymbolValue(name);
 }

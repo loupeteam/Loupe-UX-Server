@@ -1,5 +1,4 @@
-#include "./adsdatasrc.h"
-#include "./adsdatasrc_impl.h"
+#include "adsdatasrc_impl.h"
 
 #include "adsdatasrc.h"
 #include <iostream>
@@ -34,138 +33,11 @@ adsdatasrc::~adsdatasrc() {
 }
 
 void adsdatasrc::readPlcData(){
-  this->getGlobalSymbolInfo();
-  this->getDatatypeInfo();
+  impl->readInfo();
+  impl->cacheDataTypes();
 }
 
-void adsdatasrc::getGlobalSymbolInfo() {
-  char *pchSymbols = NULL;
-
-  impl->nErr = AdsSyncReadReq(impl->pAddr, ADSIGRP_SYM_UPLOADINFO, 0x0,
-                              sizeof(impl->tAdsSymbolUploadInfo),
-                              &impl->tAdsSymbolUploadInfo);
-  if (impl->nErr) {
-    cerr << "Error: AdsSyncReadReq: " << impl->nErr << '\n';
-    return;
-  }
-
-  pchSymbols = new char[impl->tAdsSymbolUploadInfo.nSymSize];
-  // assert(pchSymbols);
-  long nErr;
-
-  // Read information of the PLC-variable
-  nErr = AdsSyncReadReq(impl->pAddr, ADSIGRP_SYM_UPLOAD, 0,
-                        impl->tAdsSymbolUploadInfo.nSymSize, pchSymbols);
-
-  if (nErr)
-    cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
-
-  // Print out the information of the PLC-variable
-  PAdsSymbolEntry pAdsSymbolEntry = (PAdsSymbolEntry)pchSymbols;
-
-  int uiIndex;
-  for (uiIndex = 0; uiIndex < impl->tAdsSymbolUploadInfo.nSymbols; uiIndex++) {
-
-    string symbolName = PADSSYMBOLNAME(pAdsSymbolEntry);
-    crow::json::wvalue &symbol = impl->findInfo(symbolName);
-
-    pAdsSymbolEntry = populateSymbolInfo(symbol, symbolName, pAdsSymbolEntry);
-  }
-
-  // Release the allocated memory
-  if (pchSymbols)
-    delete (pchSymbols);
-
-  ready = true;
-}
-
-void adsdatasrc::getDatatypeInfo() {
-  AdsSymbolUploadInfo2 info;
-  long nResult = AdsSyncReadReq(impl->pAddr, ADSIGRP_SYM_UPLOADINFO2, 0,
-                                sizeof(info), &info);
-  unordered_map<string, bool> warns;
-  if (nResult == ADSERR_NOERR) {
-    // size of symbol information
-    PBYTE pSym = new BYTE[info.nSymSize];
-    if (pSym) {
-      // upload symbols (instances)
-      nResult = AdsSyncReadReq(impl->pAddr, ADSIGRP_SYM_UPLOAD, 0,
-                               info.nSymSize, pSym);
-      // create class-object for each datatype-description
-      if (nResult == ADSERR_NOERR) {
-        ParseSymbols(pSym, info.nSymSize);
-      }
-    }
-    // get size of datatype description
-    PBYTE pDT = new BYTE[info.nDatatypeSize];
-    if (pDT) {
-      // upload datatye-descriptions
-      nResult = AdsSyncReadReq(impl->pAddr, ADSIGRP_SYM_DT_UPLOAD, 0,
-                               info.nDatatypeSize, pDT);
-      if (nResult == ADSERR_NOERR) {
-        ParseDatatypes(pDT, info.nDatatypeSize);
-      }
-    }
-
-    impl->parsedSymbols =
-        new CAdsParseSymbols(pSym, info.nSymSize, pDT, info.nDatatypeSize);
-
-    delete[] pSym;
-    delete[] pDT;
-    UINT count = impl->parsedSymbols->DatatypeCount();
-    for (int i = 0; i < count; i++) {
-      PAdsDatatypeEntry pAdsDatatypeEntry = impl->parsedSymbols->GetTypeByIndex(i);
-      string typeName = PADSDATATYPENAME(pAdsDatatypeEntry);
-      dataType_member_base *dt = impl->getType(typeName);
-      if (dt->valid) {
-        continue;
-      }
-      dt->name = typeName;
-    }
-  }
-}
-
-void adsdatasrc::getSymbolInfo(std::string symbolName) {
-
-  if (!ready) {
-    return;
-  }
-
-  CAdsSymbolInfo Entry;
-
-  // Check to see if the symbol exists
-  impl->parsedSymbols->Symbol(symbolName, Entry);
-
-  impl->getMemberInfo(Entry);
-}
-
-void adsdatasrc::parseBuffer(crow::json::wvalue &variable, string &datatype, void *gbuffer, unsigned long size ){
-  
-  byte *buffer = (byte*)gbuffer;
-
-  dataType_member_base* info = impl->getType( datatype );
-  
-  if(!info->valid){
-    info->valid = true;
-    impl->PopulateChildren(info);
-  }
-
-  //If this is a basic data type, then we can parse it with the given parser
-  //Otherwise go through the members and parse them
-  if( info->baseType ){
-    info->parse( variable, buffer, size );
-    return;
-  }
-  else{
-    for ( auto member : info->members )
-    {
-      parseBuffer( variable[member->name], member->type, buffer + member->offset, member->size );
-    }
-  }
-}
-
-
-void adsdatasrc::updateVariables( std::vector<std::string> symbolNames ){
+void adsdatasrc::readSymbolValue( std::vector<std::string> symbolNames ){
     if (!ready) {
       return;
     }
@@ -218,11 +90,11 @@ void adsdatasrc::updateVariables( std::vector<std::string> symbolNames ){
         crow::json::wvalue_reader type{ref(info["type"])};
         crow::json::wvalue_reader valid{ref(info["valid"])};
         if( valid.get(false) == false) {
-          getSymbolInfo(symbolName); 
+          impl->cacheSymbolInfo(symbolName); 
           info["valid"] = true;
         }
 
-        parseBuffer(var, type.get(string("")), pdata, sizereader.get((int64_t)0));                                
+        impl->parseBuffer(var, type.get(string("")), pdata, sizereader.get((int64_t)0));                                
         pdata += sizereader.get((int64_t)0);
       }
     } else {
@@ -252,7 +124,7 @@ void adsdatasrc::readSymbolValue(std::string symbolName) {
 
   if (nResult == ADSERR_NOERR) {
     crow::json::wvalue &var = impl->findValue(symbolName);
-    parseBuffer(var, type.get(string("")), buffer, size);                                
+    impl->parseBuffer(var, type.get(string("")), buffer, size);                                
   } else {
     cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
   }
@@ -260,63 +132,14 @@ void adsdatasrc::readSymbolValue(std::string symbolName) {
   delete[] buffer;
 }
 
-void adsdatasrc::ParseSymbols(void *pSymbols, unsigned int nSymSize) {
-  impl->m_pSymbols = new BYTE[nSymSize + sizeof(ULONG)];
-  if (impl->m_pSymbols) {
-    unsigned int m_nSymSize = nSymSize;
-    if (nSymSize)
-      memcpy(impl->m_pSymbols, pSymbols, nSymSize);
-    *(PULONG)&impl->m_pSymbols[nSymSize] = 0;
-    unsigned int m_nSymbols = 0;
-    UINT offs = 0;
-    while (*(PULONG)&impl->m_pSymbols[offs]) {
-      m_nSymbols++;
-      offs += *(PULONG)&impl->m_pSymbols[offs];
-    }
-    //    ASSERT(offs==nSymSize);
-    impl->m_ppSymbolArray = new PAdsSymbolEntry[m_nSymbols];
-    m_nSymbols = offs = 0;
-    while (*(PULONG)&impl->m_pSymbols[offs]) {
-      impl->m_ppSymbolArray[m_nSymbols++] =
-          (PAdsSymbolEntry)&impl->m_pSymbols[offs];
-      offs += *(PULONG)&impl->m_pSymbols[offs];
-    }
-    //    ASSERT(offs==nSymSize);
-  }
-}
-
-void adsdatasrc::ParseDatatypes(void *pDatatypes, unsigned int nDTSize) {
-  impl->m_pDatatypes = new BYTE[nDTSize + sizeof(ULONG)];
-  if (impl->m_pDatatypes) {
-    unsigned int m_nDTSize = nDTSize;
-    if (nDTSize)
-      memcpy(impl->m_pDatatypes, pDatatypes, nDTSize);
-    *(PULONG)&impl->m_pDatatypes[nDTSize] = 0;
-    unsigned int m_nDatatypes = 0;
-    UINT offs = 0;
-    while (*(PULONG)&impl->m_pDatatypes[offs]) {
-      m_nDatatypes++;
-      offs += *(PULONG)&impl->m_pDatatypes[offs];
-    }
-    //		ASSERT(offs==nDTSize);
-    impl->m_ppDatatypeArray = new PAdsDatatypeEntry[m_nDatatypes];
-    m_nDatatypes = offs = 0;
-    while (*(PULONG)&impl->m_pDatatypes[offs]) {
-      impl->m_ppDatatypeArray[m_nDatatypes++] =
-          (PAdsDatatypeEntry)&impl->m_pDatatypes[offs];
-      offs += *(PULONG)&impl->m_pDatatypes[offs];
-    }
-    //		ASSERT(offs==nDTSize);
-  }
-}
-
-crow::json::wvalue adsdatasrc::getVariable(std::string symbolName) {
+crow::json::wvalue adsdatasrc::getSymbolValue(std::string symbolName) {
 
   crow::json::wvalue value = impl->findValue(symbolName);
   crow::json::wvalue &info = impl->findInfo(symbolName);
   crow::json::wvalue_reader valid{ref(info["valid"])};
   if( valid.get(false) == false) {
-    getSymbolInfo(symbolName); 
+
+    impl->cacheSymbolInfo(symbolName); 
     info["valid"] = true;
   }
   return value;

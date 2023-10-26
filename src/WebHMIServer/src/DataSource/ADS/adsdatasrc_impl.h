@@ -15,15 +15,23 @@ typedef ULONG *PULONG;
 #include "adsparser.h"
 
 class adsdatasrc_impl {
+
   crow::json::wvalue &find(std::string symbolName,
                            crow::json::wvalue &datasource, bool value);
-
+  void parseSymbols(void* pSymbols, unsigned int nSymSize );
+  void parseDatatypes(void* pDatatypes, unsigned int nDTSize);
+                    
 public:
+  void readInfo();
+  void cacheDataTypes();
+  void cacheSymbolInfo( std::string symbolName );
+  void parseBuffer(crow::json::wvalue &variable, std::string &datatype,
+                   void *buffer, unsigned long size);
+
   adsdatasrc_impl(){};
   long nErr, nPort;
   AmsAddr Addr;
   PAmsAddr pAddr = &Addr;
-  AdsSymbolUploadInfo tAdsSymbolUploadInfo;
 
   std::unordered_map<std::string, dataType_member_base *> dataTypes;
   crow::json::wvalue symbolData;
@@ -37,21 +45,17 @@ public:
                      unsigned long group, uint32_t offset);
 
   void PopulateChildren( dataType_member_base * dataType );
-
-  PBYTE m_pSymbols = NULL;
-  PBYTE m_pDatatypes = NULL;
-  PPAdsSymbolEntry m_ppSymbolArray = NULL;
-  PPAdsDatatypeEntry m_ppDatatypeArray = NULL;
-  CAdsParseSymbols *parsedSymbols = NULL;
-};
-
-void populateSymbolInfo(crow::json::wvalue &symbol, std::string &symbolName,
+  void populateSymbolInfo(crow::json::wvalue &symbol, std::string &symbolName,
                         unsigned long parentGroup, unsigned long parentOffset,
                         CAdsSymbolInfo &info);
 
-PAdsSymbolEntry populateSymbolInfo(crow::json::wvalue &symbol,
+  PAdsSymbolEntry populateSymbolInfo(crow::json::wvalue &symbol,
                                    std::string &symbolName,
                                    PAdsSymbolEntry pAdsSymbolEntry);
+
+  CAdsParseSymbols *parsedSymbols = NULL;
+};
+
 
 typedef struct dataPar
 {

@@ -73,8 +73,6 @@ CAdsParseSymbols::CAdsParseSymbols(PVOID pSymbols, UINT nSymSize, PVOID pDatatyp
 		ASSERT(offs==nDTSize);
 	}
 
-//	DumpSymbols();
-//	DumpDatatypes();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

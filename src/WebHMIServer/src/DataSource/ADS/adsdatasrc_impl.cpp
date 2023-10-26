@@ -69,59 +69,77 @@ void adsdatasrc_impl::PopulateChildren( dataType_member_base * parser ){
       }
 }
 
-dataType_member_base * dataType_member_base::parserForType( std::string name, std::string type, unsigned long iOffs, unsigned long size ){
-      if(type._Starts_with("STRING")){
-        return new dataType_member_string(name, type, iOffs, size);
+void adsdatasrc_impl::readInfo(){
+
+  AdsSymbolUploadInfo2 info;
+  long nResult = AdsSyncReadReq(this->pAddr, ADSIGRP_SYM_UPLOADINFO2, 0,
+                                sizeof(info), &info);
+
+  if (nResult == ADSERR_NOERR) {
+    // size of symbol information
+    PBYTE pSym = new BYTE[info.nSymSize];
+    PBYTE pDT = new BYTE[info.nDatatypeSize];
+
+    if (pSym && pDT) {
+        // upload symbols (instances)
+        long resultSym = AdsSyncReadReq(this->pAddr, ADSIGRP_SYM_UPLOAD, 0,
+                                info.nSymSize, pSym);
+        // get size of datatype description
+        // upload datatye-descriptions
+        long resultDt = AdsSyncReadReq(this->pAddr, ADSIGRP_SYM_DT_UPLOAD, 0,
+                                info.nDatatypeSize, pDT);
+
+        this->parsedSymbols = new CAdsParseSymbols(pSym, info.nSymSize, pDT, info.nDatatypeSize);
       }
-      else if(type._Starts_with("WSTRING")){
-        return new dataType_member_wstring(name, type, iOffs, size);
+      delete[] pSym;
+      delete[] pDT;
+    }
+
+}
+
+void adsdatasrc_impl::cacheDataTypes(){
+
+    UINT count = this->parsedSymbols->DatatypeCount();
+    for (int i = 0; i < count; i++) {
+      PAdsDatatypeEntry pAdsDatatypeEntry = this->parsedSymbols->GetTypeByIndex(i);
+      string typeName = PADSDATATYPENAME(pAdsDatatypeEntry);
+      dataType_member_base *dt = this->getType(typeName);
+      if (dt->valid) {
+        continue;
       }
-      else if(type == "BOOL" || type == "BIT" || type == "BIT8"){
-        return new dataType_member_bool(name, type, iOffs, size);
-      }
-      else if(type == "BYTE" || type == "USINT" || type == "BITARR8" || type == "UINT8"){
-        return new dataType_member_base_typed<uint8_t>{name, type, iOffs, size};
-      }
-      else if(type == "SINT" || type == "INT8" ){
-        return new dataType_member_base_typed<int8_t>{name, type, iOffs, size};
-      }
-      else if(type == "UINT" || type == "WORD" || type == "BITARR16" || type == "UINT16"){
-        return new dataType_member_base_typed<uint16_t>{name, type, iOffs, size};
-      }
-      else if(type == "INT" || type == "INT16"){
-        return new dataType_member_base_typed<int16_t>{name, type, iOffs, size};
-      }
-      else if(type == "ENUM" ){
-        return new dataType_member_enum{name, type, iOffs, size};
-      }
-      else if(type == "DINT" || type == "INT32"){
-        return new dataType_member_base_typed<int32_t>{name, type, iOffs, size};
-      }
-      else if(type == "UDINT" || type == "DWORD" || type == "TIME" || type == "TIME_OF_DAY" || type == "TOD" || type == "BITARR32" || type == "UINT32"){
-        return new dataType_member_base_typed<uint32_t>{name, type, iOffs, size};
-      }
-      else if(type == "DATE_AND_TIME" || type == "DT" || type == "DATE" ){
-        return new dataType_member_base_typed<uint32_t>{name, type, iOffs, size};
-      }
-      else if(type == "REAL" || type == "FLOAT"){
-        return new dataType_member_base_typed<float>{name, type, iOffs, size};
-      }
-      else if(type == "DOUBLE" || type == "LREAL" ){
-        return new dataType_member_base_typed<double>{name, type, iOffs, size};
-      }
-      else if(type == "LWORD" || type == "ULINT" || type == "LTIME" || type == "UINT64" ){
-        return new dataType_member_base_typed<uint64_t>{name, type, iOffs, size};
-      }
-      else if(type == "LINT" || type == "INT64" ){
-        return new dataType_member_base_typed<int64_t>{name, type, iOffs, size};
-      }
-      else if(type._Starts_with("POINTER") ){
-        return new dataType_member_pointer{name, type, iOffs, size};
-      }
-      else{
-        return new datatype_member(name, type, iOffs, size);
-      }
-      
+      dt->name = typeName;
+    }
+}
+
+void adsdatasrc_impl::cacheSymbolInfo( std::string symbolName ){
+  CAdsSymbolInfo Entry;
+  this->parsedSymbols->Symbol(symbolName, Entry);
+  this->getMemberInfo(Entry);
+}
+
+void adsdatasrc_impl::parseBuffer(crow::json::wvalue &variable, string &datatype, void *pBuffer, unsigned long size ){
+  
+  byte *buffer = (byte*)pBuffer;
+
+  dataType_member_base* info = this->getType( datatype );
+  
+  if(!info->valid){
+    info->valid = true;
+    this->PopulateChildren(info);
+  }
+
+  //If this is a basic data type, then we can parse it with the given parser
+  //Otherwise go through the members and parse them
+  if( info->baseType ){
+    info->parse( variable, buffer, size );
+    return;
+  }
+  else{
+    for ( auto member : info->members )
+    {
+      parseBuffer( variable[member->name], member->type, buffer + member->offset, member->size );
+    }
+  }
 }
 
 dataType_member_base* adsdatasrc_impl::getType( std::string& typeName ){
@@ -173,7 +191,7 @@ crow::json::wvalue& adsdatasrc_impl::find(std::string symbolName, crow::json::wv
   return *ret;
 }
 
-void populateSymbolInfo(crow::json::wvalue &symbol,
+void adsdatasrc_impl::populateSymbolInfo(crow::json::wvalue &symbol,
                                    std::string &symbolName,
                                    unsigned long parentGroup,
                                    unsigned long parentOffset,
@@ -186,7 +204,7 @@ void populateSymbolInfo(crow::json::wvalue &symbol,
   symbol["comment"] = info.comment;
 }
 
-PAdsSymbolEntry populateSymbolInfo(crow::json::wvalue &symbol,
+PAdsSymbolEntry adsdatasrc_impl::populateSymbolInfo(crow::json::wvalue &symbol,
                                    std::string &symbolName,
                                    PAdsSymbolEntry pAdsSymbolEntry) {
   symbol["name"] = symbolName;

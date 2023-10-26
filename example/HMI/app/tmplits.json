@@ -9,6 +9,10 @@
                 "file":"../pages/main.handlebars"
             },
             {
+                "name": "testPage1",
+                "file":"../pages/testPage1.handlebars"
+            },
+            {
                 "name": "service",
                 "file":"../pages/service.handlebars"
             },

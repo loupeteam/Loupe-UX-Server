@@ -48,12 +48,12 @@ int jsonserver::start( int port, bool async ) {
 
   if( async){
     thread = pApp->port(port)
-    .multithreaded()
+    .concurrency(5)
     .run_async();
   }
   else{
     pApp->port(port)
-    .multithreaded()
+    .concurrency(5)
     .run();    
   }
   return 0;

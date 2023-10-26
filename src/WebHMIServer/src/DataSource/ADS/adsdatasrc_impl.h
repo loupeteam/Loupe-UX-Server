@@ -18,6 +18,7 @@ public:
   bool valid = false;
   bool isArray = false;
   bool isMember = false;
+  bool baseType = false;
   std::string name;
   std::string type;
   unsigned long offset;
@@ -40,7 +41,7 @@ public:
   // Constructor with name, type, offset and size
   datatype_member(std::string name, std::string type, unsigned long offset,
                   unsigned long size)
-      : dataType_member_base(name, type, offset, size){};
+      : dataType_member_base(name, type, offset, size){  };
   bool parse(crow::json::wvalue &variable, void *pbuffer, unsigned long size) {
     BYTE *buffer = (BYTE *)pbuffer;
     if(isArray){
@@ -67,7 +68,7 @@ public:
   // Constructor with name, type, offset and size
   dataType_member_base_typed(std::string name, std::string type,
                              unsigned long offset, unsigned long size)
-      : dataType_member_base(name, type, offset, size){};
+      : dataType_member_base(name, type, offset, size){ baseType = true; };
   bool parse(crow::json::wvalue &variable, void *buffer,
              unsigned long size) override {
     if (size == sizeof(T)) {
@@ -87,7 +88,7 @@ public:
   // Constructor with name, type, offset and size
   dataType_member_bool(std::string name, std::string type,
                              unsigned long offset, unsigned long size)
-      : dataType_member_base(name, type, offset, size){};
+      : dataType_member_base(name, type, offset, size){ baseType = true; };
   bool parse(crow::json::wvalue &variable, void *buffer,
              unsigned long size) override {
     if (size == sizeof(bool)) {
@@ -107,7 +108,7 @@ public:
   // Constructor with name, type, offset and size
   dataType_member_string(std::string name, std::string type,
                          unsigned long offset, unsigned long size)
-      : dataType_member_base(name, type, offset, size){};
+      : dataType_member_base(name, type, offset, size){ baseType = true; };
   bool parse(crow::json::wvalue &variable, void *buffer,
              unsigned long size) override {
     if (size > 0) {
@@ -127,7 +128,7 @@ public:
   // Constructor with name, type, offset and size
   dataType_member_enum(std::string name, std::string type, unsigned long offset,
                        unsigned long size)
-      : dataType_member_base(name, type, offset, size){};
+      : dataType_member_base(name, type, offset, size){ baseType = true; };
   bool parse(crow::json::wvalue &variable, void *buffer,
              unsigned long size) override {
     if (size > 0) {
@@ -147,7 +148,7 @@ public:
   // Constructor with name, type, offset and size
   dataType_member_wstring(std::string name, std::string type,
                           unsigned long offset, unsigned long size)
-      : dataType_member_base(name, type, offset, size){};
+      : dataType_member_base(name, type, offset, size){ baseType = true; };
   bool parse(crow::json::wvalue &variable, void *buffer,
              unsigned long size) override {
     if (size > 0) {
@@ -170,7 +171,7 @@ public:
   // Constructor with name, type, offset and size
   dataType_member_unsupported(std::string name, std::string type,
                               unsigned long offset, unsigned long size)
-      : dataType_member_base(name, type, offset, size){};
+      : dataType_member_base(name, type, offset, size){ baseType = true; };
   bool parse(crow::json::wvalue &variable, void *buffer,
              unsigned long size) override {
     if (isMember) {
@@ -186,7 +187,7 @@ public:
   // Constructor with name, type, offset and size
   dataType_member_pointer(std::string name, std::string type,
                           unsigned long offset, unsigned long size)
-      : dataType_member_base(name, type, offset, size){};
+      : dataType_member_base(name, type, offset, size){ baseType = true; };
   bool parse(crow::json::wvalue &variable, void *buffer,
              unsigned long size) override {
     if (isMember) {

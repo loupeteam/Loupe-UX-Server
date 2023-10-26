@@ -139,8 +139,24 @@ void adsdatasrc::parseBuffer(crow::json::wvalue &variable, string &datatype, voi
   byte *buffer = (byte*)gbuffer;
 
   dataType_member_base* info = impl->getType( datatype );
+  
+  if(!info->valid){
+    info->valid = true;
+    impl->PopulateChildren(info);
+  }
 
-  info->parse( variable, buffer, size );
+  //If this is a basic data type, then we can parse it with the given parser
+  //Otherwise go through the members and parse them
+  if( info->baseType ){
+    info->parse( variable, buffer, size );
+    return;
+  }
+  else{
+    for ( auto member : info->members )
+    {
+      parseBuffer( variable[member->name], member->type, buffer + member->offset, member->size );
+    }
+  }
 }
 
 
@@ -190,10 +206,16 @@ void adsdatasrc::updateVariables( std::vector<std::string> symbolNames ){
       PBYTE pObjAdsErrRes = (BYTE*)buffer;				// point to ADS-err
       PBYTE pdata = pObjAdsRes;
       for( auto symbolName : symbolNames){
+
         crow::json::wvalue &var = impl->findValue(symbolName);
-        crow::json::wvalue info = impl->findInfo(symbolName);
+        crow::json::wvalue &info = impl->findInfo(symbolName);
         crow::json::wvalue_reader sizereader{ref(info["size"])};
         crow::json::wvalue_reader type{ref(info["type"])};
+        crow::json::wvalue_reader valid{ref(info["valid"])};
+        if( valid.get(false) == false) {
+          getSymbolInfo(symbolName); 
+          info["valid"] = true;
+        }
 
         parseBuffer(var, type.get(string("")), pdata, sizereader.get((int64_t)0));                                
         pdata += sizereader.get((int64_t)0);

@@ -292,8 +292,5 @@ crow::json::wvalue adsdatasrc::getVariable(std::string symbolName) {
     getSymbolInfo(symbolName); 
     info["valid"] = true;
   }
-
-//  readSymbolValue(symbolName);
-
   return value;
 }

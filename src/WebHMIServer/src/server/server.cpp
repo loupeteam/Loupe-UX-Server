@@ -12,10 +12,7 @@ int main(int argc, char const *argv[])
 {
 
   adsdatasrc dataSource;
-  dataSource.getGlobalSymbolInfo();
-  dataSource.getDatatypeInfo();
-//  dataSource.getSymbolInfo( "Main.lift1.configuration");
-//  dataSource.readSymbolValue( "Main.lift1.configuration");
+  dataSource.readPlcData();
 
 
   jsonserver server;

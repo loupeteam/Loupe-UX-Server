@@ -33,6 +33,11 @@ adsdatasrc::~adsdatasrc() {
   delete impl;
 }
 
+void adsdatasrc::readPlcData(){
+  this->getGlobalSymbolInfo();
+  this->getDatatypeInfo();
+}
+
 void adsdatasrc::getGlobalSymbolInfo() {
   char *pchSymbols = NULL;
 

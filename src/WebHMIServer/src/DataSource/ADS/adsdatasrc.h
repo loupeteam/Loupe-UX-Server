@@ -19,6 +19,7 @@ public:
   void readSymbolValue( std::string symbolName );
   void parseBuffer(crow::json::wvalue &variable, std::string &datatype, void *buffer, unsigned long size );
   void updateVariables( std::vector<std::string> symbolNames );
+  void readPlcData();
   crow::json::wvalue getVariable(std::string symbolName);  
 };
 

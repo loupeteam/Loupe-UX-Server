@@ -73,8 +73,8 @@ void adsdatasrc::readSymbolValue( std::vector<std::string> symbolNames ){
                                     parReq); // pointer to buffer for ADS-commands
 
     auto finish = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = finish - start;
-    std::cout << "ADS-Read: " << elapsed.count() << " s\n" << std::flush;
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
+    std::cout << "ADS-Read: " << elapsed.count()/1000.0 << " ms\n" << std::flush;
 
 
     if (nResult == ADSERR_NOERR) {

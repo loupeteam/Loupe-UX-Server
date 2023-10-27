@@ -14,6 +14,7 @@ class CAdsSymbolInfo
 {
 public:
 	CAdsSymbolInfo() : m_pEntry(NULL) {};
+	bool 		valid;
 	bool		isProperty;				// 
 	ULONG		iGrp;				// 
 	ULONG		iOffs;			// 

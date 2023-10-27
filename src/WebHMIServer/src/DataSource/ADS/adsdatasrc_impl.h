@@ -20,6 +20,7 @@ class symbolMetadata {
 public:
   std::string name;
   bool valid = false;
+  bool notFound = false;
   unsigned long group = 0;
   unsigned long gOffset = 0;
   unsigned long offset = 0;
@@ -62,7 +63,7 @@ class adsdatasrc_impl {
 public:
   void readInfo();
   void cacheDataTypes();
-  void cacheSymbolInfo( std::string symbolName );
+  bool cacheSymbolInfo( std::string symbolName );
   void parseBuffer(crow::json::wvalue &variable, std::string &datatype,
                    void *buffer, unsigned long size);
 

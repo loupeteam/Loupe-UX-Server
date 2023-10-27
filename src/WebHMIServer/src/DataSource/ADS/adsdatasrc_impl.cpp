@@ -122,14 +122,17 @@ void adsdatasrc_impl::cacheDataTypes(){
     }
 }
 
-void adsdatasrc_impl::cacheSymbolInfo( std::string symbolName ){
+bool adsdatasrc_impl::cacheSymbolInfo( std::string symbolName ){
 
   CAdsSymbolInfo Entry;
   this->parsedSymbols->Symbol(symbolName, Entry);
+  if( Entry.valid == false ){
+    return false;
+  }
   symbolMetadata &info = this->symbolInfo[Entry.name];
   populateSymbolInfo( info, Entry.fullname, Entry);
   this->getMemberInfo(symbolName, Entry);
-
+  return true;
 }
 
 void adsdatasrc_impl::parseBuffer(crow::json::wvalue &variable, string &datatype, void *pBuffer, unsigned long size ){
@@ -168,8 +171,8 @@ dataType_member_base* adsdatasrc_impl::getType( std::string& typeName ){
 
 symbolMetadata & adsdatasrc_impl::findInfo(std::string& symbolName){
   symbolMetadata & info = this->symbolInfo[symbolName];
-  if( info.valid == false ){
-    cacheSymbolInfo( symbolName );
+  if( info.valid == false && !info.notFound ){
+    info.notFound = !cacheSymbolInfo( symbolName );
   }
   return info;
 }

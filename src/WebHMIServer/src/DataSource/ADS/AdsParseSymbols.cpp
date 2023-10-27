@@ -174,7 +174,7 @@ BOOL	CAdsParseSymbols::Symbol(UINT sym, CAdsSymbolInfo& info)
 BOOL	CAdsParseSymbols::Symbol( std::string name, CAdsSymbolInfo& info )
 {
 	int i=0;
-	 PAdsSymbolEntry pEntry = NULL;
+	PAdsSymbolEntry pEntry = NULL;
 	toLower(name);
 	while( pEntry = Symbol(i++) ){
 		std::string symbolName = PADSSYMBOLNAME(pEntry);
@@ -183,8 +183,11 @@ BOOL	CAdsParseSymbols::Symbol( std::string name, CAdsSymbolInfo& info )
 			break;
 		}
 	}
-	if ( pEntry == NULL )
+	if ( pEntry == NULL ){
+		info.valid		= false;
 		return FALSE;
+	}
+	info.valid		= true;
 	info.offs		= 0;
 	info.iGrp		= pEntry->iGroup;
 	info.iOffs		= pEntry->iOffs;

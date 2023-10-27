@@ -37,6 +37,20 @@ void adsdatasrc_impl::getMemberInfo( std::string targetSymbol, PAdsDatatypeEntry
     else{
       info.fullname = info.name;
     }
+
+    //If the shorter of target symbol and current symbol is not in the other one, then skip
+    // This is so we don't cache large strcutres that are not needed
+    if( targetSymbol.size() < info.fullname.size() ){
+      if( targetSymbol.compare(0, targetSymbol.size(), info.fullname, 0, targetSymbol.size()) != 0 ){
+        continue;
+      }
+    }
+    else{
+      if( info.fullname.compare(0, info.fullname.size(), targetSymbol, 0, info.fullname.size()) != 0 ){
+        continue;
+      }
+    }    
+
     symbolMetadata &symbol = this->symbolInfo[info.fullname];
 
     populateSymbolInfo( symbol, info.fullname, group, offset, info);
@@ -44,11 +58,11 @@ void adsdatasrc_impl::getMemberInfo( std::string targetSymbol, PAdsDatatypeEntry
     if(SubEntry.subItems == 0){
 			info.m_pEntry = parsedSymbols->GetTypeByName(info.type);
       if(info.m_pEntry){
-        getMemberInfo( info.m_pEntry, info.fullname, group, offset + SubEntry.offs);
+        getMemberInfo( targetSymbol, info.m_pEntry, info.fullname, group, offset + SubEntry.offs);
       }
     }
     else{
-      getMemberInfo( &SubEntry, info.fullname, group, offset + SubEntry.offs );
+      getMemberInfo( targetSymbol, &SubEntry, info.fullname, group, offset + SubEntry.offs );
     }    
   }    
 }
@@ -114,7 +128,7 @@ void adsdatasrc_impl::cacheSymbolInfo( std::string symbolName ){
   this->parsedSymbols->Symbol(symbolName, Entry);
   symbolMetadata &info = this->symbolInfo[Entry.name];
   populateSymbolInfo( info, Entry.fullname, Entry);
-  this->getMemberInfo(Entry);
+  this->getMemberInfo(symbolName, Entry);
 
 }
 
@@ -125,7 +139,7 @@ void adsdatasrc_impl::parseBuffer(crow::json::wvalue &variable, string &datatype
   dataType_member_base* dt = this->getType( datatype );
   
   if(!dt->valid){
-    this->PopulateChildren(dt);
+    this->prepareDatatypeParser(dt);
   }
 
   //If this is a basic data type, then we can parse it with the given parser

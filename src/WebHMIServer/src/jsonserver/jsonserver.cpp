@@ -40,7 +40,7 @@ int jsonserver::start( int port, bool async ) {
           std::string key = v.s();
           keys.push_back(key);
         }
-        this->addPendingReadRequest(jsonRequest(conn, "read", keys));
+        this->addPendingReadRequest(jsonRequest(conn, "read", keys, std::chrono::steady_clock::now()));
       });
 
   //Start a new thread for the server updates
@@ -87,7 +87,6 @@ void jsonserver::removeConnection( crow::websocket::connection &conn ){
 void jsonserver::serverThread(){
   while(1){
     handlePendingRequests();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 
@@ -108,11 +107,20 @@ void jsonserver::addPendingReadRequest( jsonRequest &req ){
 }
 bool jsonserver::getPendingReadRequest( jsonRequest *req ){
   mtx_pendingReadRequests.lock();
-  if( pendingReadRequests.size() > 0 ){
-    *req = pendingReadRequests.front();
-    pendingReadRequests.pop_front();
-    mtx_pendingReadRequests.unlock();
-    return true;
+  while( pendingReadRequests.size() > 0 ){
+
+      //Get the oldest request
+      *req = pendingReadRequests.front();
+      pendingReadRequests.pop_front();
+
+      //Check if the packet is really old, throw it out if it is
+      if( std::chrono::steady_clock::now() - req->receiveTime > std::chrono::milliseconds(3000) ){
+        std::cout << "Packet too old, throwing it out. Age: " << (std::chrono::steady_clock::now() - req->receiveTime).count( ) << std::endl;
+        continue;
+      }      
+
+      mtx_pendingReadRequests.unlock();
+      return true;
   }
   mtx_pendingReadRequests.unlock();
   return false;
@@ -175,7 +183,7 @@ int jsonserver::handlePendingRequests( ){
     //Measure the packet preparation time
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
-    std::cout << "Packet preparation time: " << duration.count() << " microseconds" << std::endl;
+    std::cout << "Packet preparation time: " << duration.count()/1000.0 << " ms" << std::endl;
 
 
     //Send the request to the PLC
@@ -187,12 +195,14 @@ int jsonserver::handlePendingRequests( ){
     //Send the response to the clients
     for( auto r : currentRequest){
       this->sendResponse( r.conn, r.keys);
+      //Cout the total response time
+      std::cout << "Total response time: " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - r.receiveTime).count( )/1000.0 << " ms" << std::endl;
     }
 
     //Measure the response time
     end = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
-    std::cout << "Response time: " << duration.count() << " microseconds" << std::endl;
+    std::cout << "Response time: " << duration.count()/1000.0 << " ms" << std::endl;
 
   }
   return 0;
@@ -224,7 +234,7 @@ int jsonserver::sendResponse( crow::websocket::connection *conn, const std::vect
     //Measure packet json preparation time
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
-    std::cout << "Packet json preparation time: " << duration.count() << " microseconds" << std::endl;
+    std::cout << "Packet json preparation time: " << duration.count()/1000.0 << " ms" << std::endl;
 
 
 
@@ -241,7 +251,7 @@ int jsonserver::sendResponse( crow::websocket::connection *conn, const std::vect
     //Measure string generation time
     end = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
-    std::cout << "String generation time: " << duration.count() << " microseconds" << std::endl;
+    std::cout << "String generation time: " << duration.count()/1000.0 << " ms" << std::endl;
 
     //Measure the send time
     start = std::chrono::high_resolution_clock::now();
@@ -252,7 +262,6 @@ int jsonserver::sendResponse( crow::websocket::connection *conn, const std::vect
     end = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
     std::cout << "Send time: " << duration.count() << " microseconds" << std::endl;
-
 
     return 0;
 }

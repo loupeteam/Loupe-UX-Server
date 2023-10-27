@@ -6,7 +6,6 @@
 class adsdatasrc : public DataSource{
 private:
     void * _impl;
-    bool ready = 0;
 public:
   adsdatasrc(/* args */);
   ~adsdatasrc();
@@ -14,6 +13,7 @@ public:
   void readSymbolValue( std::string symbolName );
   void readSymbolValue( std::vector<std::string> symbolNames );
   void readPlcData();
+  bool ready();
   crow::json::wvalue getSymbolValue(std::string symbolName);  
 };
 

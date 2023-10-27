@@ -29,6 +29,7 @@ public:
                                              unsigned long iOffs,
                                              unsigned long size);
 };
+
 class datatype_member : public dataType_member_base {
 public:
   // Constructor with name, type, offset and size

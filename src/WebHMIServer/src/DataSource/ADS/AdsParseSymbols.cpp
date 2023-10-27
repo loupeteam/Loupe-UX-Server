@@ -185,6 +185,7 @@ BOOL	CAdsParseSymbols::Symbol( std::string name, CAdsSymbolInfo& info )
 	}
 	if ( pEntry == NULL )
 		return FALSE;
+	info.offs		= 0;
 	info.iGrp		= pEntry->iGroup;
 	info.iOffs		= pEntry->iOffs;
 	info.size		= pEntry->size;
@@ -260,51 +261,6 @@ BOOL	CAdsParseSymbols::SubSymbolInfo(CAdsSymbolInfo &main, UINT sub, CAdsSymbolI
 	return FALSE;
 }
 
-BOOL	CAdsParseSymbols::SubSymbolEntry(CAdsSymbolInfo &main, UINT sub, AdsDatatypeEntry &SEntry){
-		if ( !main.m_pEntry )
-			main.m_pEntry = GetTypeByName(main.type);
-		return SubSymbolEntry(main.m_pEntry, sub, SEntry);
-}
-
-BOOL	CAdsParseSymbols::SubSymbolEntry(PAdsDatatypeEntry pEntry, UINT sub, AdsDatatypeEntry &SEntry)
-{
-	if ( pEntry )
-	{
-		if ( pEntry->subItems )
-		{
-			SEntry = *AdsDatatypeStructItem(pEntry, sub);
-		}
-		else if ( pEntry->arrayDim )
-		{
-			UINT x[10]={0}, baseSize=pEntry->size;
-			x[pEntry->arrayDim] = 1;
-			PAdsDatatypeArrayInfo pAI = PADSDATATYPEARRAYINFO(pEntry);
-			for ( int i=pEntry->arrayDim-1; i >= 0 ; i-- )
-			{
-				x[i] = x[i+1]*pAI[i].elements;
-				if ( pAI[i].elements )
-					baseSize /= pAI[i].elements;
-			}
-			if ( sub == 0 && x[0] > 1000 )
-			{
-				std::cout << "Warning: array size is " << x[0] << " elements, this may take a while to parse.\n";
-			}
-			if ( sub < x[0] )
-			{
-				SEntry = *pEntry;
-				std::string arr ="[";
-				for ( int i = 0; i < pEntry->arrayDim; i++ )
-				{
-//					arr	+= string::format("%d", pAI[i].lBound + sub / x[i+1]);
-//					arr	+= (i==pEntry->arrayDim-1) ? ']' : ',';
-				}
-				return TRUE;
-			}
-		}
-	}
-	return FALSE;
-}
-
 BOOL	CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymbolInfo& info)
 {
 	PAdsDatatypeEntry pEntry = Entry;
@@ -316,6 +272,7 @@ BOOL	CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymb
 			if ( pSEntry )
 			{
 				info.iGrp		= 0;
+				info.iOffs		= 0;
 				info.offs		= pSEntry->offs;
 				info.size		= pSEntry->size;
 				info.dataType	= pSEntry->dataType;
@@ -354,6 +311,51 @@ BOOL	CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymb
 				info.comment	= PADSDATATYPECOMMENT(pEntry);
 				info.name		= std::to_string(sub);
 				info.fullname	= std::string(PADSSYMBOLNAME(pEntry)) + info.name;
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
+}
+
+BOOL	CAdsParseSymbols::SubSymbolEntry(CAdsSymbolInfo &main, UINT sub, AdsDatatypeEntry &SEntry){
+		if ( !main.m_pEntry )
+			main.m_pEntry = GetTypeByName(main.type);
+		return SubSymbolEntry(main.m_pEntry, sub, SEntry);
+}
+
+BOOL	CAdsParseSymbols::SubSymbolEntry(PAdsDatatypeEntry pEntry, UINT sub, AdsDatatypeEntry &SEntry)
+{
+	if ( pEntry )
+	{
+		if ( pEntry->subItems )
+		{
+			SEntry = *AdsDatatypeStructItem(pEntry, sub);
+		}
+		else if ( pEntry->arrayDim )
+		{
+			UINT x[10]={0}, baseSize=pEntry->size;
+			x[pEntry->arrayDim] = 1;
+			PAdsDatatypeArrayInfo pAI = PADSDATATYPEARRAYINFO(pEntry);
+			for ( int i=pEntry->arrayDim-1; i >= 0 ; i-- )
+			{
+				x[i] = x[i+1]*pAI[i].elements;
+				if ( pAI[i].elements )
+					baseSize /= pAI[i].elements;
+			}
+			if ( sub == 0 && x[0] > 1000 )
+			{
+				std::cout << "Warning: array size is " << x[0] << " elements, this may take a while to parse.\n";
+			}
+			if ( sub < x[0] )
+			{
+				SEntry = *pEntry;
+				std::string arr ="[";
+				for ( int i = 0; i < pEntry->arrayDim; i++ )
+				{
+//					arr	+= string::format("%d", pAI[i].lBound + sub / x[i+1]);
+//					arr	+= (i==pEntry->arrayDim-1) ? ']' : ',';
+				}
 				return TRUE;
 			}
 		}

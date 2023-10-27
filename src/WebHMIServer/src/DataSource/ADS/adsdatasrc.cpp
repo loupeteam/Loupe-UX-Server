@@ -37,8 +37,11 @@ void adsdatasrc::readPlcData(){
   impl->cacheDataTypes();
 }
 
+bool adsdatasrc::ready(){
+  return impl->ready;
+}
 void adsdatasrc::readSymbolValue( std::vector<std::string> symbolNames ){
-    if (!ready) {
+    if (!ready()) {
       return;
     }
     unsigned long size = 0;
@@ -46,16 +49,12 @@ void adsdatasrc::readSymbolValue( std::vector<std::string> symbolNames ){
     dataPar *parReq = new dataPar[symbolNames.size()];
     dataPar *parReqPop = parReq;
     for( auto symbolName : symbolNames){
-      crow::json::wvalue info = impl->findInfo(symbolName);
-      crow::json::wvalue_reader group{ref(info["group"])};
-      crow::json::wvalue_reader offset{ref(info["offset"])};
-      crow::json::wvalue_reader sizereader{ref(info["size"])};
-      crow::json::wvalue_reader type{ref(info["type"])};
-      parReqPop->indexGroup = group.get((int64_t)0);
-      parReqPop->indexOffset = offset.get((int64_t)0);
-      parReqPop->length = sizereader.get((int64_t)0);
+      symbolMetadata info = impl->findInfo(symbolName);
+      parReqPop->indexGroup = info.group;
+      parReqPop->indexOffset = info.gOffset;
+      parReqPop->length = info.size;
       parReqPop++;
-      size += sizereader.get((int64_t)0);
+      size += info.size;
     }
 
     BYTE *buffer = new BYTE[size + 4*reqNum];
@@ -83,19 +82,21 @@ void adsdatasrc::readSymbolValue( std::vector<std::string> symbolNames ){
       PBYTE pObjAdsErrRes = (BYTE*)buffer;				// point to ADS-err
       PBYTE pdata = pObjAdsRes;
       for( auto symbolName : symbolNames){
-
+        
+        long result = *(long*)pObjAdsErrRes;
+        pObjAdsErrRes += 4;
+        if( result != ADSERR_NOERR){
+          cerr << "Error: AdsSyncReadReq: " << result << '\n';
+          continue;
+        }        
         crow::json::wvalue &var = impl->findValue(symbolName);
-        crow::json::wvalue &info = impl->findInfo(symbolName);
-        crow::json::wvalue_reader sizereader{ref(info["size"])};
-        crow::json::wvalue_reader type{ref(info["type"])};
-        crow::json::wvalue_reader valid{ref(info["valid"])};
-        if( valid.get(false) == false) {
+        symbolMetadata &info = impl->findInfo(symbolName);
+        if( info.valid == false) {
           impl->cacheSymbolInfo(symbolName); 
-          info["valid"] = true;
         }
 
-        impl->parseBuffer(var, type.get(string("")), pdata, sizereader.get((int64_t)0));                                
-        pdata += sizereader.get((int64_t)0);
+        impl->parseBuffer(var, info.type, pdata, info.size);                                
+        pdata += info.size;
       }
     } else {
       cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
@@ -106,25 +107,21 @@ void adsdatasrc::readSymbolValue( std::vector<std::string> symbolNames ){
   }
   
 void adsdatasrc::readSymbolValue(std::string symbolName) {
-  if (!ready) {
+  if (!impl->ready) {
     return;
   }
 
-  crow::json::wvalue info = impl->findInfo(symbolName);
-  crow::json::wvalue_reader group{ref(info["group"])};
-  crow::json::wvalue_reader offset{ref(info["offset"])};
-  crow::json::wvalue_reader sizereader{ref(info["size"])};
-  crow::json::wvalue_reader type{ref(info["type"])};
-  unsigned long size = sizereader.get((int64_t)0);
+  symbolMetadata info = impl->findInfo(symbolName);
+  unsigned long size = info.size;
   BYTE *buffer = new BYTE[size];
 
   // Read a variable from ADS
-  long nResult = AdsSyncReadReq(impl->pAddr, group.get((int64_t)0),
-                                offset.get((int64_t)0), size, buffer);
+  long nResult = AdsSyncReadReq(impl->pAddr, info.group,
+                                info.offset, size, buffer);
 
   if (nResult == ADSERR_NOERR) {
     crow::json::wvalue &var = impl->findValue(symbolName);
-    impl->parseBuffer(var, type.get(string("")), buffer, size);                                
+    impl->parseBuffer(var, info.type, buffer, size);                                
   } else {
     cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
   }
@@ -135,12 +132,10 @@ void adsdatasrc::readSymbolValue(std::string symbolName) {
 crow::json::wvalue adsdatasrc::getSymbolValue(std::string symbolName) {
 
   crow::json::wvalue value = impl->findValue(symbolName);
-  crow::json::wvalue &info = impl->findInfo(symbolName);
-  crow::json::wvalue_reader valid{ref(info["valid"])};
-  if( valid.get(false) == false) {
+  symbolMetadata &info = impl->findInfo(symbolName);
 
+  if( info.valid == false) {
     impl->cacheSymbolInfo(symbolName); 
-    info["valid"] = true;
   }
   return value;
 }

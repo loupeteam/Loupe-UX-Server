@@ -13,6 +13,10 @@
                 "file":"../pages/testPage1.handlebars"
             },
             {
+                "name": "nav",
+                "file":"../pages/nav.handlebars"
+            },
+            {
                 "name": "service",
                 "file":"../pages/service.handlebars"
             },

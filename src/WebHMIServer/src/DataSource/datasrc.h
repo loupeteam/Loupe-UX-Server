@@ -11,6 +11,8 @@ public:
 
   virtual void readSymbolValue( std::string symbolName ){ };
   virtual void readSymbolValue(std::vector<std::string> symbolNames){ };
+  virtual void writeSymbolValue( crow::json::rvalue packet ){ };
+
   virtual crow::json::wvalue getSymbolValue(std::string symbolName){ return crow::json::wvalue{}; };
   
 };

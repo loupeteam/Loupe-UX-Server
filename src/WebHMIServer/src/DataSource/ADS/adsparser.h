@@ -21,10 +21,8 @@ public:
                        unsigned long size)
       : name(name), type(type), offset(offset), size(size){};
   dataType_member_base(){};
-  virtual bool parse(crow::json::wvalue &variable, void *buffer,
-                     unsigned long size) {
-    return false;
-  }
+  virtual bool parse(crow::json::wvalue &variable, void *buffer,unsigned long size){return false;};
+  virtual bool encode(BYTE *buffer, std::string value, unsigned long size){return false;};
   static dataType_member_base *parserForType(std::string name, std::string type,
                                              unsigned long iOffs,
                                              unsigned long size);
@@ -54,6 +52,9 @@ public:
       return false;
     }
   }
+  bool encode(BYTE *buffer, std::string value, unsigned long size) override {
+    return false;
+  }
 };
 
 template <typename T>
@@ -75,6 +76,13 @@ public:
     }
     return false;
   }
+  bool encode(BYTE *buffer, std::string value, unsigned long size) override {
+    if (size == sizeof(T)) {
+      *(T *)buffer = std::stoi(value);
+      return true;
+    }
+    return false;
+  }
 };
 
 class dataType_member_bool : public dataType_member_base {
@@ -90,6 +98,19 @@ public:
         variable[name] = (bool)(*(BYTE*)buffer & 0x01);
       } else {
         variable = (bool)(*(BYTE*)buffer & 0x01);
+      }
+      return true;
+    }
+    return false;
+  }
+  bool encode(BYTE *buffer, std::string value, unsigned long size) override {
+    if (size == sizeof(bool)) {
+      //Handle all the ways json can represent a boolean
+      if( value == "true" || value == "True" || value == "TRUE" || value == "1" ){
+        *(BYTE *)buffer = 0x01;
+      }
+      else{
+        *(BYTE *)buffer = 0x00;
       }
       return true;
     }
@@ -115,6 +136,14 @@ public:
     }
     return false;
   }
+  bool encode(BYTE *buffer, std::string value, unsigned long size) override {
+    if (size > 0) {
+      //TODO: Use safer string copy
+      strncpy((char *)buffer, value.c_str(), size);
+      return true;
+    }
+    return false;
+  }
 };
 
 class dataType_member_enum : public dataType_member_base {
@@ -135,6 +164,13 @@ public:
     }
     return false;
   }
+  bool encode(BYTE *buffer, std::string value, unsigned long size) override {
+    if (size > 0) { 
+      *(uint32_t *)buffer = std::stoi(value);
+      return true;
+    }          
+    return false;
+  }  
 };
 
 class dataType_member_wstring : public dataType_member_base {
@@ -158,6 +194,16 @@ public:
     }
     return false;
   }
+  bool encode(BYTE *buffer, std::string value, unsigned long size) override {
+    if (size > 0) {
+      // Convert from a wstring to a string.
+      std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+      std::wstring wvalue = converter.from_bytes(value);
+      memcpy(buffer, wvalue.c_str(), size);
+      return true;
+    }
+    return false;
+  }  
 };
 
 class dataType_member_unsupported : public dataType_member_base {
@@ -175,6 +221,9 @@ public:
     }
     return true;
   }
+  bool encode(BYTE *buffer, std::string value, unsigned long size) override {
+    return false;
+  }
 };
 class dataType_member_pointer : public dataType_member_base {
 public:
@@ -190,6 +239,9 @@ public:
       variable = "Pointer to: " + type;
     }
     return true;
+  }
+  bool encode(BYTE *buffer, std::string value, unsigned long size) override {
+    return false;
   }
 };
 
@@ -212,6 +264,9 @@ public:
     } else {
       return false;
     }
+  }
+  bool encode(BYTE *buffer, std::string value, unsigned long size) override {
+    return false;
   }
 };
 

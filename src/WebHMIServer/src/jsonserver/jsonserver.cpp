@@ -31,16 +31,29 @@ int jsonserver::start( int port, bool async ) {
       .onmessage([&](crow::websocket::connection &conn, const std::string &data,
                      bool is_binary) {
         crow::json::rvalue message = crow::json::load(data);
-        crow::json::rvalue variables = message["data"];
 
-        std::vector<std::string> keys;
+        std::string type = message["type"].s();
 
-        //Go through all the array values and add them to the response
-        for (auto &v : variables) {
-          std::string key = v.s();
-          keys.push_back(key);
+        if(type == "read"){  
+          crow::json::rvalue variables = message["data"];
+          std::vector<std::string> keys;
+          //Go through all the array values and add them to the response
+          for (auto &v : variables) {
+            std::string key = v.s();
+            keys.push_back(key);
+          }
+          this->addPendingReadRequest(jsonRequest(conn, "read", keys, std::chrono::steady_clock::now()));
         }
-        this->addPendingReadRequest(jsonRequest(conn, "read", keys, std::chrono::steady_clock::now()));
+        else if(type == "write"){
+          crow::json::rvalue variables = message["data"];
+          this->dataSources.at(0)->writeSymbolValue(variables);
+          //Send the response
+          crow::json::wvalue x;
+          x["type"] = "writeresponse";
+          x["data"] = crow::json::wvalue("{}");
+
+          conn.send_text(x.dump());          
+        }
       });
 
   //Start a new thread for the server updates

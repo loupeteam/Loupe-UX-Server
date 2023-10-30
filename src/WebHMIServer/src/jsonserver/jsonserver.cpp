@@ -34,17 +34,9 @@ int jsonserver::start( int port, bool async ) {
 
         std::string type = message["type"].s();
 
-        if(type == "read"){  
-          crow::json::rvalue variables = message["data"];
-          std::vector<std::string> keys;
-          //Go through all the array values and add them to the response
-          for (auto &v : variables) {
-            std::string key = v.s();
-            keys.push_back(key);
-          }
-          this->addPendingReadRequest(jsonRequest(conn, "read", keys, std::chrono::steady_clock::now()));
-        }
-        else if(type == "write"){
+        if(type == "write"){
+          mtx_pendingReadRequests.lock();
+
           crow::json::rvalue variables = message["data"];
           this->dataSources.at(0)->writeSymbolValue(variables);
           //Send the response
@@ -53,6 +45,17 @@ int jsonserver::start( int port, bool async ) {
           x["data"] = crow::json::wvalue("{}");
 
           conn.send_text(x.dump());          
+          mtx_pendingReadRequests.unlock();
+        }
+        else if(type == "read"){  
+          crow::json::rvalue variables = message["data"];
+          std::vector<std::string> keys;
+          //Go through all the array values and add them to the response
+          for (auto &v : variables) {
+            std::string key = v.s();
+            keys.push_back(key);
+          }
+          this->addPendingReadRequest(jsonRequest(conn, "read", keys, std::chrono::steady_clock::now()));
         }
       });
 
@@ -147,7 +150,7 @@ int jsonserver::handlePendingRequests( ){
   //Build up a consolidate PLC read request
   std::unordered_map<std::string, bool> variables;
   variables.reserve(500);
-  std::vector<jsonRequest> currentRequest;
+  std::unordered_map<void*,jsonRequest> currentRequest;
 
   //Generate a consolidated packet
   jsonRequest r;
@@ -156,8 +159,14 @@ int jsonserver::handlePendingRequests( ){
       for( auto key : r.keys){
         variables[ key ] = true;
       }
-      //Add to current request
-      currentRequest.push_back(r);
+      auto request =  currentRequest[r.conn];
+      if(request.conn == nullptr){
+        //Add to current request
+        currentRequest[r.conn] = r;
+      }
+      else{
+        request.keys.insert(request.keys.end(), r.keys.begin(), r.keys.end());
+      }
     }
     else{
       //No room, put it back
@@ -207,9 +216,9 @@ int jsonserver::handlePendingRequests( ){
 
     //Send the response to the clients
     for( auto r : currentRequest){
-      this->sendResponse( r.conn, r.keys);
+      this->sendResponse( r.second.conn, r.second.keys);
       //Cout the total response time
-      std::cout << "Total response time: " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - r.receiveTime).count( )/1000.0 << " ms" << std::endl;
+      std::cout << "Total response time: " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - r.second.receiveTime).count( )/1000.0 << " ms" << std::endl;
     }
 
     //Measure the response time

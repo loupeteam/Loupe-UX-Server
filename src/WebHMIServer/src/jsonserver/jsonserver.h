@@ -11,7 +11,7 @@ class jsonRequest
 public:
   std::chrono::steady_clock::time_point receiveTime;
   std::string type;
-  crow::websocket::connection *conn;
+  crow::websocket::connection *conn = nullptr;
   std::vector<std::string> keys;    
   jsonRequest(crow::websocket::connection &conn, std::string type, std::vector<std::string> keys) : conn(&conn), type(type), keys(keys) {};
   jsonRequest(crow::websocket::connection &conn, std::string type, std::vector<std::string> keys, std::chrono::steady_clock::time_point receiveTime) : conn(&conn), type(type), keys(keys), receiveTime(receiveTime) {};

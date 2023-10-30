@@ -170,7 +170,7 @@ void gatherBaseTypeNames_Member(crow::json::rvalue &member,  std::string prefix,
       gatherBaseTypeNames(member, prefix, names);
     }
     else{
-      names.emplace_back(make_pair(prefix, std::string(member.s())));
+      names.emplace_back(make_pair(prefix, std::string(member)));
     }
 }
 //Go through the structure and gather all the names of the members that are base types

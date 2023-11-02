@@ -35,6 +35,7 @@ class symbolMetadata {
 public:
     std::string name;
     bool valid = false;
+    bool cacheComplete = false;
     bool notFound = false;
     bool isArray = false;
     unsigned long group = 0;

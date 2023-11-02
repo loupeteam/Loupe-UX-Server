@@ -15,23 +15,25 @@ adsdatasrc_impl::~adsdatasrc_impl()
     }
 }
 
-void adsdatasrc_impl::getMemberInfo(std::string targetSymbol, CAdsSymbolInfo main)
+bool adsdatasrc_impl::getMemberInfo(std::string targetSymbol, CAdsSymbolInfo main)
 {
     if (!main.m_pEntry) {
         main.m_pEntry = parsedSymbols->GetTypeByName(main.type);
     }
 
     if (main.m_pEntry) {
-        getMemberInfo(targetSymbol, main.m_pEntry, main.fullname, main.iGrp, main.iOffs);
+        return getMemberInfo(targetSymbol, main.m_pEntry, main.fullname, main.iGrp, main.iOffs);
     }
+    return false;
 }
 
-void adsdatasrc_impl::getMemberInfo(std::string       targetSymbol,
+bool adsdatasrc_impl::getMemberInfo(std::string       targetSymbol,
                                     PAdsDatatypeEntry Entry,
                                     string            prefix,
                                     unsigned long     group,
                                     uint32_t          offset)
 {
+    bool cacheComplete = true;
     CAdsSymbolInfo info;
     for (size_t i = 0; i < parsedSymbols->SubSymbolCount(Entry); i++) {
         parsedSymbols->SubSymbolInfo(Entry, i, info);
@@ -49,10 +51,12 @@ void adsdatasrc_impl::getMemberInfo(std::string       targetSymbol,
         // This is so we don't cache large strcutres that are not needed
         if (targetSymbol.size() < info.fullname.size()) {
             if (targetSymbol.compare(0, targetSymbol.size(), info.fullname, 0, targetSymbol.size()) != 0) {
+                cacheComplete = false;
                 continue;
             }
         } else {
             if (info.fullname.compare(0, info.fullname.size(), targetSymbol, 0, info.fullname.size()) != 0) {
+                cacheComplete = false;
                 continue;
             }
         }
@@ -66,12 +70,22 @@ void adsdatasrc_impl::getMemberInfo(std::string       targetSymbol,
         if (SubEntry.subItems == 0) {
             info.m_pEntry = parsedSymbols->GetTypeByName(info.type);
             if (info.m_pEntry) {
-                getMemberInfo(targetSymbol, info.m_pEntry, info.fullname, group, offset + SubEntry.offs);
+                symbol.cacheComplete = getMemberInfo(targetSymbol,
+                                                     info.m_pEntry,
+                                                     info.fullname,
+                                                     group,
+                                                     offset + SubEntry.offs);
             }
         } else {
-            getMemberInfo(targetSymbol, &SubEntry, info.fullname, group, offset + SubEntry.offs);
+            symbol.cacheComplete = getMemberInfo(targetSymbol,
+                                                 &SubEntry,
+                                                 info.fullname,
+                                                 group,
+                                                 offset + SubEntry.offs);
         }
+        cacheComplete = cacheComplete && symbol.cacheComplete;
     }
+    return cacheComplete;
 }
 
 bool adsdatasrc_impl::supportType(ULONG flags)
@@ -120,7 +134,7 @@ bool adsdatasrc_impl::cacheSymbolInfo(std::string symbolName)
     }
     symbolMetadata& info = this->symbolInfo[Entry.name];
     populateSymbolInfo(info, Entry.fullname, Entry);
-    this->getMemberInfo(symbolName, Entry);
+    info.cacheComplete = this->getMemberInfo(symbolName, Entry);
     return true;
 }
 
@@ -192,7 +206,7 @@ bool adsdatasrc_impl::encodeBuffer(std::string&  variable,
 symbolMetadata& adsdatasrc_impl::findInfo(std::string& symbolName)
 {
     symbolMetadata& info = this->symbolInfo[symbolName];
-    if ((info.valid == false) && !info.notFound) {
+    if ((info.cacheComplete == false) && !info.notFound) {
         info.notFound = !cacheSymbolInfo(symbolName);
     }
     return info;

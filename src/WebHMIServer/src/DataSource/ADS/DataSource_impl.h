@@ -41,8 +41,8 @@ public:
     crow::json::wvalue& findValue(std::string& symbolName);
     // dataType_member_base* getType(std::string& typeName);
 
-    void getMemberInfo(std::string targetSymbol, CAdsSymbolInfo Entry);
-    void getMemberInfo(std::string       targetSymbol,
+    bool getMemberInfo(std::string targetSymbol, CAdsSymbolInfo Entry);
+    bool getMemberInfo(std::string       targetSymbol,
                        PAdsDatatypeEntry Entry,
                        std::string       prefix,
                        unsigned long     group,

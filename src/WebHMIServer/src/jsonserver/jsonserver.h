@@ -9,6 +9,11 @@
 class jsonRequest {
 public:
     std::chrono::steady_clock::time_point receiveTime;
+    std::chrono::steady_clock::time_point pickedTime;
+    std::chrono::steady_clock::time_point sendRequestTime;
+    std::chrono::steady_clock::time_point finishRequestTime;
+    std::chrono::steady_clock::time_point sendResponseTime;
+    std::chrono::steady_clock::time_point finishResponseTime;
     std::string type;
     crow::websocket::connection* conn = nullptr;
     std::vector<std::string> keys;
@@ -21,6 +26,7 @@ public:
             receiveTime)
     {}
     jsonRequest(){}
+    void printTimes();
 };
 
 class plcrequest {

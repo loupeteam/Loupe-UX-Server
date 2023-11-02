@@ -128,8 +128,10 @@ void jsonserver::responseThread()
             jsonRequest response = pendingResponse.front();
             pendingResponse.pop_front();
             mtx_pendingResponse.unlock();
+            response.sendResponseTime = getTimestamp();
             this->sendResponse(response.conn, response.keys);
-            measureTime("Total response time: ", response.receiveTime);
+            response.finishResponseTime = getTimestamp();
+            response.printTimes();
         } else {
             mtx_pendingResponse.unlock();
         }
@@ -184,20 +186,27 @@ int jsonserver::handlePendingRequests()
     //Build up a consolidate PLC read request
     std::unordered_map<std::string, bool> variables;
     variables.reserve(500);
+
+    //Keep track of the current request for each connection
     std::unordered_map<void*, jsonRequest> currentRequest;
 
     //Generate a consolidated packet
     jsonRequest r;
+
     while (getPendingReadRequest(&r)) {
         if (r.keys.size() + variables.size() < 500) {
             for ( auto key : r.keys) {
                 variables[ key ] = true;
             }
-            auto request = currentRequest[r.conn];
+            auto& request = currentRequest[r.conn];
             if (request.conn == nullptr) {
                 //Add to current request
                 currentRequest[r.conn] = r;
+                request.pickedTime = getTimestamp();
             } else {
+                //If we already have a request for this connection, add the keys to it
+                // to ensure that we don't send the same request twice, or miss variables that
+                // are requested in a previous request
                 request.keys.insert(request.keys.end(), r.keys.begin(), r.keys.end());
             }
         } else {
@@ -234,13 +243,16 @@ int jsonserver::handlePendingRequests()
             keys.push_back(kv.first);
         }
 
-        measureTime("Packet preparation time: ", start);
+        for ( auto& kv : currentRequest) {
+            kv.second.sendRequestTime = getTimestamp();
+        }
 
         //Send the request to the PLC
         this->readVariables(keys);
 
         mtx_pendingResponse.lock();
-        for ( auto kv : currentRequest) {
+        for ( auto& kv : currentRequest) {
+            kv.second.finishRequestTime = getTimestamp();
             pendingResponse.push_back(kv.second);
         }
         mtx_pendingResponse.unlock();
@@ -271,8 +283,6 @@ int jsonserver::sendResponse(crow::websocket::connection* conn, const std::vecto
     x["type"] = "readresponse";
     x["data"] = crow::json::wvalue(variablesList);
 
-    measureTime("Packet json preparation time: ", start);
-
     //Lock the user list
     std::lock_guard<std::mutex> _(mtx_connections);
 
@@ -284,14 +294,10 @@ int jsonserver::sendResponse(crow::websocket::connection* conn, const std::vecto
     start = getTimestamp();
     std::string text = x.dump();
 
-    measureTime("String generation time: ", start);
-
     //Measure the send time
     start = getTimestamp();
 
     conn->send_text(text);
-
-    measureTime("Send time: ", start);
 
     return 0;
 }
@@ -299,4 +305,16 @@ int jsonserver::sendResponse(crow::websocket::connection* conn, const std::vecto
 crow::json::wvalue jsonserver::getVariable(std::string name)
 {
     return this->dataSources.at(0)->getSymbolValue(name);
+}
+
+void jsonRequest::printTimes()
+{
+    //Print the delta times
+    std::cout << "\n Delta times:" << std::endl;
+    printTime("Time waiting for request pick : ", receiveTime, pickedTime);
+    printTime("Time to Generate Variables    : ", pickedTime, sendRequestTime);
+    printTime("Time to talk to PLC           : ", sendRequestTime, finishRequestTime);
+    printTime("Time waiting for response pick: ", finishRequestTime, sendResponseTime);
+    printTime("Time to respond               : ", sendResponseTime, finishResponseTime);
+    printTime("Total response time:          : ", receiveTime, finishResponseTime);
 }

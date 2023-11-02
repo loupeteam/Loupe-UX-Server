@@ -52,11 +52,19 @@ std::chrono::high_resolution_clock::time_point getTimestamp()
     return std::chrono::high_resolution_clock::now();
 }
 
+double printTime(std::string                                    name,
+                 std::chrono::high_resolution_clock::time_point start,
+                 std::chrono::high_resolution_clock::time_point end)
+{
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << name << elapsed.count() / 1000.0 << " ms\n" << std::flush;
+    return elapsed.count() / 1000.0;
+}
+
 //Measure the time elapased since timestamp
 double measureTime(std::string name, std::chrono::high_resolution_clock::time_point start)
 {
-    auto finish = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
-    std::cout << name << elapsed.count() / 1000.0 << " ms\n" << std::flush;
+    auto end = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     return elapsed.count() / 1000.0;
 }

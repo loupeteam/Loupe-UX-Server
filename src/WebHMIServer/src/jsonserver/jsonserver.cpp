@@ -1,5 +1,6 @@
 #include "jsonserver.h"
 #include "crow_all.h"
+#include "util.h"
 
 jsonserver::jsonserver() {}
 
@@ -155,7 +156,7 @@ bool jsonserver::getPendingReadRequest(jsonRequest* req)
 int jsonserver::handlePendingRequests()
 {
     //Measure the time for the request handling
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = getTimestamp();
 
     //Build up a consolidate PLC read request
     std::unordered_map<std::string, bool> variables;
@@ -210,10 +211,7 @@ int jsonserver::handlePendingRequests()
             keys.push_back(kv.first);
         }
 
-        //Measure the packet preparation time
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        std::cout << "Packet preparation time: " << duration.count() / 1000.0 << " ms" << std::endl;
+        measureTime("Packet preparation time: ", start);
 
         //Send the request to the PLC
         this->readVariables(keys);
@@ -224,15 +222,10 @@ int jsonserver::handlePendingRequests()
         //Send the response to the clients
         for ( auto r : currentRequest) {
             this->sendResponse(r.second.conn, r.second.keys);
-            //Cout the total response time
-            std::cout << "Total response time: " << std::chrono::duration_cast<std::chrono::microseconds>(
-                std::chrono::steady_clock::now() - r.second.receiveTime).count() / 1000.0 << " ms" << std::endl;
+            measureTime("Total response time: ", r.second.receiveTime);
         }
 
-        //Measure the response time
-        end = std::chrono::high_resolution_clock::now();
-        duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        std::cout << "Response time: " << duration.count() / 1000.0 << " ms" << std::endl;
+        measureTime("Response time: ", start);
     }
     return 0;
 }
@@ -244,7 +237,7 @@ int jsonserver::sendResponse(crow::websocket::connection* conn, const std::vecto
     }
 
     //Measure packet json preparation time
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = getTimestamp();
 
     //Prepare the response before checking if the connection is still in the user list
     //This minimizes the time that the mutex is locked
@@ -260,10 +253,7 @@ int jsonserver::sendResponse(crow::websocket::connection* conn, const std::vecto
     x["type"] = "readresponse";
     x["data"] = crow::json::wvalue(variablesList);
 
-    //Measure packet json preparation time
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Packet json preparation time: " << duration.count() / 1000.0 << " ms" << std::endl;
+    measureTime("Packet json preparation time: ", start);
 
     //Lock the user list
     std::lock_guard<std::mutex> _(mtx_connections);
@@ -273,22 +263,17 @@ int jsonserver::sendResponse(crow::websocket::connection* conn, const std::vecto
         return 0;
     }
     //Measure string generation time
-    start = std::chrono::high_resolution_clock::now();
+    start = getTimestamp();
     std::string text = x.dump();
-    //Measure string generation time
-    end = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "String generation time: " << duration.count() / 1000.0 << " ms" << std::endl;
+
+    measureTime("String generation time: ", start);
 
     //Measure the send time
-    start = std::chrono::high_resolution_clock::now();
+    start = getTimestamp();
 
     conn->send_text(text);
 
-    //Measure the send time
-    end = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Send time: " << duration.count() << " microseconds" << std::endl;
+    measureTime("Send time: ", start);
 
     return 0;
 }

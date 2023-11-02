@@ -93,7 +93,7 @@ PAdsDatatypeEntry CAdsParseSymbols::GetTypeByName(std::string sType)
     PAdsDatatypeEntry pKey = (PAdsDatatypeEntry)m_bufGetTypeByNameBuffer;
 
     //Go through the data types and find the one that matches the name
-    for ( int i = 0; i < m_nDatatypes; i++ ) {
+    for ( unsigned int i = 0; i < m_nDatatypes; i++ ) {
         if (sType == PADSDATATYPENAME(m_ppDatatypeArray[i])) {
             return m_ppDatatypeArray[i];
         }
@@ -172,6 +172,10 @@ BOOL CAdsParseSymbols::Symbol(UINT sym, CAdsSymbolInfo& info)
     info.type = PADSSYMBOLTYPE(pEntry);
     info.comment = PADSSYMBOLCOMMENT(pEntry);
     info.flags_struct = datatype_flags_struct(pEntry->flags, true);
+    info.m_pEntry = GetTypeByName(info.type);
+    if (info.m_pEntry) {
+        info.arrayDim = info.m_pEntry->arrayDim;
+    }
     return TRUE;
 }
 
@@ -203,6 +207,11 @@ BOOL CAdsParseSymbols::Symbol(std::string name, CAdsSymbolInfo& info)
     info.type = PADSSYMBOLTYPE(pEntry);
     info.comment = PADSSYMBOLCOMMENT(pEntry);
     info.flags_struct = datatype_flags_struct(pEntry->flags, true);
+    info.m_pEntry = GetTypeByName(info.type);
+    if (info.m_pEntry) {
+        info.arrayDim = info.m_pEntry->arrayDim;
+    }
+
     return TRUE;
 }
 
@@ -226,6 +235,10 @@ BOOL CAdsParseSymbols::SubSymbolInfo(CAdsSymbolInfo& main, UINT sub, CAdsSymbolI
                 info.type = PADSDATATYPETYPE(pSEntry);
                 info.comment = PADSDATATYPECOMMENT(pSEntry);
                 info.flags_struct = datatype_flags_struct(pSEntry->flags, true);
+                info.m_pEntry = GetTypeByName(info.type);
+                if (info.m_pEntry) {
+                    info.arrayDim = info.m_pEntry->arrayDim;
+                }
                 return TRUE;
             }
         } else if (pEntry->arrayDim) {
@@ -257,6 +270,10 @@ BOOL CAdsParseSymbols::SubSymbolInfo(CAdsSymbolInfo& main, UINT sub, CAdsSymbolI
                 info.name = main.name + arr;
                 info.fullname = main.fullname + arr;
                 info.flags_struct = datatype_flags_struct(pEntry->flags, false);
+                info.m_pEntry = GetTypeByName(info.type);
+                if (info.m_pEntry) {
+                    info.arrayDim = info.m_pEntry->arrayDim;
+                }
                 return TRUE;
             }
         }
@@ -282,6 +299,10 @@ BOOL CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymb
                 info.type = PADSDATATYPETYPE(pSEntry);
                 info.comment = PADSDATATYPECOMMENT(pSEntry);
                 info.flags_struct = datatype_flags_struct(pSEntry->flags, false);
+                info.m_pEntry = GetTypeByName(info.type);
+                if (info.m_pEntry) {
+                    info.arrayDim = info.m_pEntry->arrayDim;
+                }
                 return TRUE;
             }
         } else if (pEntry->arrayDim) {
@@ -308,6 +329,10 @@ BOOL CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymb
                 info.name = std::to_string(sub);
                 info.fullname = std::string(PADSSYMBOLNAME(pEntry)) + info.name;
                 info.flags_struct = datatype_flags_struct(pEntry->flags, false);
+                info.m_pEntry = GetTypeByName(info.type);
+                if (info.m_pEntry) {
+                    info.arrayDim = info.m_pEntry->arrayDim;
+                }
                 return TRUE;
             }
         }
@@ -358,7 +383,7 @@ BOOL CAdsParseSymbols::SubSymbolEntry(PAdsDatatypeEntry pEntry, UINT sub, AdsDat
 void CAdsParseSymbols::DumpDatatypes()
 {
     //Go through all the data types and COUT them
-    for ( int i = 0; i < m_nDatatypes; i++ ) {
+    for ( unsigned int i = 0; i < m_nDatatypes; i++ ) {
         std::cout << "Name: " << PADSDATATYPENAME(m_ppDatatypeArray[i]) << "\n";
         std::cout << "Type: " << PADSDATATYPETYPE(m_ppDatatypeArray[i]) << "\n";
         std::cout << "Comment: " << PADSDATATYPECOMMENT(m_ppDatatypeArray[i]) << "\n";
@@ -375,7 +400,7 @@ void CAdsParseSymbols::DumpDatatypes()
 void CAdsParseSymbols::DumpSymbols()
 {
     //Go through all the symbols and COUT them
-    for ( int i = 0; i < m_nSymbols; i++ ) {
+    for ( unsigned int i = 0; i < m_nSymbols; i++ ) {
         std::cout << "Name: " << PADSSYMBOLNAME(m_ppSymbolArray[i]) << "\n";
         std::cout << "Type: " << PADSSYMBOLTYPE(m_ppSymbolArray[i]) << "\n";
         std::cout << "Comment: " << PADSSYMBOLCOMMENT(m_ppSymbolArray[i]) << "\n";

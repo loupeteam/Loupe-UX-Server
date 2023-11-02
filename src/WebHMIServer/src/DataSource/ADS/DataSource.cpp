@@ -12,6 +12,7 @@ adsdatasrc_impl* static_impl;
 adsdatasrc::adsdatasrc()
 {
     _impl = new adsdatasrc_impl();
+    //TODO: Make this configurable
     impl->nPort = AdsPortOpen();
     impl->Addr.netId.b[0] = 192;
     impl->Addr.netId.b[1] = 168;
@@ -38,29 +39,32 @@ void adsdatasrc::readPlcData()
 {
     while (impl->readInfo() != 0) {
         Sleep(1000);
+        cerr << "No PLC Connections, will try again " << '\n';
     }
-    impl->cacheDataTypes();
 }
 
 bool adsdatasrc::ready() { return impl->ready; }
 
 void adsdatasrc::readSymbolValue(std::string symbolName)
 {
-    if (!impl->ready) {
+    if (!ready()) {
         return;
     }
 
+    //Get the symbol info
     symbolMetadata info = impl->findInfo(symbolName);
+
+    //Allocate a buffer for the data
     unsigned long size = info.size;
     BYTE* buffer = new BYTE[size];
 
     // Read a variable from ADS
-    long nResult =
-        AdsSyncReadReq(impl->pAddr, info.group, info.offset, size, buffer);
+    long nResult = AdsSyncReadReq(impl->pAddr, info.group, info.offset, size, buffer);
 
+    //Parse the buffer into the variable
     if (nResult == ADSERR_NOERR) {
         crow::json::wvalue& var = impl->findValue(symbolName);
-        impl->parseBuffer(var, info.type, buffer, size);
+        impl->parseBuffer(var, info, buffer, size);
     } else {
         cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
     }
@@ -73,10 +77,14 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> symbolNames)
     if (!ready()) {
         return;
     }
-    unsigned long size = 0;
+
+    //Allocate a buffer for the data
     long reqNum = symbolNames.size();
     dataPar* parReq = new dataPar[symbolNames.size()];
     dataPar* parReqPop = parReq;
+
+    //Go through and figure out how much space and how many requests we need
+    unsigned long size = 0;
     for (auto symbolName : symbolNames) {
         symbolMetadata info = impl->findInfo(symbolName);
         parReqPop->indexGroup = info.group;
@@ -86,31 +94,25 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> symbolNames)
         size += info.size;
     }
 
+    //Allocate a buffer for the request and data
     BYTE* buffer = new BYTE[size + 4 * reqNum];
 
     // Measure time for ADS-Read
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = getTimestamp();
 
     // Read a variable from ADS
     long nResult = AdsSyncReadWriteReq(
         impl->pAddr,
-        0xf080, // Sum-Command, response will contain ADS-error code for each
-                // ADS-Sub-command
+        ADSIGRP_SUMUP_READ, // Sum-Command, response will contain ADS-error code for each ADS-Sub-command
         reqNum, // Number of ADS-Sub-commands
-        4 * reqNum + size, // we request additional "error"-flag(long) for each
-                           // ADS-sub commands
+        4 * reqNum + size, // we request additional "error"-flag(long) for each ADS-sub commands
         buffer,          // pointer to buffer for ADS-data
-        12 * reqNum, // send 12 bytes (3 * long : IG, IO, Len) of each ADS-sub
-                     // command
+        12 * reqNum, // send 12 bytes (3 * long : IG, IO, Len) of each ADS-sub command
         parReq);   // pointer to buffer for ADS-commands
 
-    auto finish = std::chrono::high_resolution_clock::now();
-    auto elapsed =
-        std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
-    std::cout << "ADS-Read: " << elapsed.count() / 1000.0 << " ms\n"
-              << std::flush;
+    measureTime("ADS-Read: ", start);
 
-    start = std::chrono::high_resolution_clock::now();
+    start = getTimestamp();
 
     if (nResult == ADSERR_NOERR) {
         PBYTE pObjAdsRes = (BYTE*)buffer + (reqNum * 4); // point to ADS-data
@@ -125,22 +127,14 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> symbolNames)
             }
             crow::json::wvalue& var = impl->findValue(symbolName);
             symbolMetadata& info = impl->findInfo(symbolName);
-            if (info.valid == false) {
-                impl->cacheSymbolInfo(symbolName);
-            }
-
             impl->parseBuffer(var, info, pdata, info.size);
-
             pdata += info.size;
         }
     } else {
         cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
     }
 
-    finish = std::chrono::high_resolution_clock::now();
-    elapsed = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
-    std::cout << "Parse: " << elapsed.count() / 1000.0 << " ms\n"
-              << std::flush;
+    measureTime("Parse: ", start);
 
     delete[] buffer;
     delete[] parReq;
@@ -162,7 +156,7 @@ void adsdatasrc::writeSymbolValue(std::string symbolName)
     if (nResult == ADSERR_NOERR) {
         crow::json::wvalue& var = impl->findValue(symbolName);
         impl->parseBuffer(var,
-                          info.type,
+                          info,
                           buffer,
                           size);
     } else {
@@ -211,7 +205,7 @@ void adsdatasrc::gatherBaseTypeNames(crow::json::rvalue&              packet,
             gatherBaseTypeNames_Member(member, prefix + key, names);
         }
     } else if (packet.t() == crow::json::type::List) {
-        for ( int i = 0; i < packet.size(); i++ ) {
+        for ( size_t i = 0; i < packet.size(); i++ ) {
             crow::json::rvalue member = packet[i];
             gatherBaseTypeNames_Member(member, prefix + "[" + std::to_string(i) + "]", names);
         }
@@ -232,9 +226,6 @@ void adsdatasrc::writeSymbolValue(crow::json::rvalue packet)
     //Go through and figure out how much space and how many requests we need
     for (auto symbolName : symbolNames) {
         symbolMetadata& info = impl->findInfo(symbolName.first);
-        if (info.valid == false) {
-            impl->cacheSymbolInfo(symbolName.first);
-        }
         if (info.valid == true) {
             reqNum++;
             size += info.size;
@@ -259,39 +250,23 @@ void adsdatasrc::writeSymbolValue(crow::json::rvalue packet)
         } else {
             cerr << "Error: Could not encode value for " << symbolName.first << '\n';
         }
-        // symbolMetadata info = impl->findInfo(symbolName.first);
-        // if (info.valid == true) {
-        //     if (dataType_member_base::encode(info.dataType, pdata, symbolName.second, info.size)) {
-        //         parReqPop->indexGroup = info.group;
-        //         parReqPop->indexOffset = info.gOffset;
-        //         parReqPop->length = info.size;
-        //         pdata += info.size;
-        //         parReqPop++;
-        //     } else {
-        //         cerr << "Error: Could not encode value for " << symbolName.first << '\n';
-        //     }
-        // }
     }
 
     // Measure time for ADS-Read
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = getTimestamp();
     PBYTE mAdsSumBufferRes = new BYTE[4 * reqNum];
 
     // Read a variable from ADS
     long nResult = AdsSyncReadWriteReq(
         impl->pAddr,
-        0xf081, // Sum-Command, response will contain ADS-error code for each ADS-Sub-command
+        ADSIGRP_SUMUP_WRITE, // Sum-Command, response will contain ADS-error code for each ADS-Sub-command
         reqNum, // Number of ADS-Sub-commands
         4 * reqNum, // we request additional "error"-flag(long) for each ADS-sub commands
         mAdsSumBufferRes,          // pointer to buffer for ADS-data
-        reqNum * sizeof(dataPar) + size,      // send x bytes (3 * long : IG, IO, Len) + data
-        // command
+        reqNum * sizeof(dataPar) + size,      // send x bytes (3 * long : IG, IO, Len) + data command
         buffer);   // pointer to buffer for ADS-commands
 
-    auto finish = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
-    std::cout << "ADS-write: " << elapsed.count() / 1000.0 << " ms\n"
-              << std::flush;
+    measureTime("ADS-write: ", start);
 
     if (nResult == ADSERR_NOERR) {
         cout << "success?";
@@ -308,8 +283,5 @@ crow::json::wvalue adsdatasrc::getSymbolValue(std::string symbolName)
     crow::json::wvalue value = impl->findValue(symbolName);
     symbolMetadata& info = impl->findInfo(symbolName);
 
-    if (info.valid == false) {
-        impl->cacheSymbolInfo(symbolName);
-    }
     return value;
 }

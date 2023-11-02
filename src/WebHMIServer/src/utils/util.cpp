@@ -25,14 +25,12 @@ std::deque<std::string> split(const string& str, char delim)
 }
 
 //Split a string by multiple delimiters
-std::deque<std::string> split(const std::string& str, std::string delims)
+std::deque<std::string> splitVarName(const std::string& str, std::string delims)
 {
     std::deque<std::string> elems;
     string::size_type pos, prev = 0;
     while ((pos = str.find_first_of(delims, prev)) != string::npos) {
         if (pos > prev) {
-//            if (1 == pos - prev) {break;}
-
             if ((prev > 0) && (str[prev - 1] == '[')) {
                 prev--;
             }
@@ -46,4 +44,19 @@ std::deque<std::string> split(const std::string& str, std::string delims)
     }
     if (prev < str.size()) {elems.emplace_back(str, prev, str.size() - prev);}
     return elems;
+}
+
+//Get a timestamp to measure agains
+std::chrono::high_resolution_clock::time_point getTimestamp()
+{
+    return std::chrono::high_resolution_clock::now();
+}
+
+//Measure the time elapased since timestamp
+double measureTime(std::string name, std::chrono::high_resolution_clock::time_point start)
+{
+    auto finish = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
+    std::cout << name << elapsed.count() / 1000.0 << " ms\n" << std::flush;
+    return elapsed.count() / 1000.0;
 }

@@ -9,7 +9,10 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-typedef struct datatype_flags_struct {
+#include <TcAdsDef.h>
+#include <TcAdsAPI.h>
+
+struct datatype_flags_struct {
     bool DATATYPE;
     bool DATAITEM;
     bool REFERENCETO;
@@ -25,7 +28,7 @@ typedef struct datatype_flags_struct {
     bool ATTRIBUTES;
     bool ENUMINFOS;
     datatype_flags_struct()
-    {};
+    {}
     datatype_flags_struct(ULONG flags, bool symbol);
 };
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,6 +41,7 @@ public:
     ULONG size;                     // size of datatype ( in bytes )
     ULONG offs;                     // offs of dataitem in parent datatype ( in bytes )
     ULONG dataType;             // adsDataType of symbol (if alias)
+    UINT16 arrayDim;
     ULONG flags;                //
     datatype_flags_struct flags_struct;
     std::string name;
@@ -99,8 +103,8 @@ protected:
     BYTE m_bufGetTypeByNameBuffer[300];
 };
 
-#define ADSDATATYPEFLAG_DATATYPE 1
-#define ADSDATATYPEFLAG_DATAITEM 2
+// #define ADSDATATYPEFLAG_DATATYPE 1
+// #define ADSDATATYPEFLAG_DATAITEM 2
 #define ADSDATATYPEFLAG_REFERENCETO 4
 #define ADSDATATYPEFLAG_METHODDEREF 8
 #define ADSDATATYPEFLAG_OVERSAMPLE 16

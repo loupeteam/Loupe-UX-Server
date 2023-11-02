@@ -66,12 +66,17 @@ int jsonserver::start(int port, bool async)
     });
 
     //Start a new thread for the server updates
-    thread = std::async(std::launch::async, &jsonserver::serverThread, this);
+    serverThreads = std::async(std::launch::async, &jsonserver::serverThread, this);
+
+    //Spin up a few response threads
+    for (int i = 0; i < 5; i++) {
+        responseThreads.push_back(std::async(std::launch::async, &jsonserver::responseThread, this));
+    }
 
     if (async) {
-        thread = pApp->port(port)
-                 .concurrency(5)
-                 .run_async();
+        crowThreads = pApp->port(port)
+                      .concurrency(5)
+                      .run_async();
     } else {
         pApp->port(port)
         .concurrency(5)
@@ -110,6 +115,24 @@ void jsonserver::serverThread()
 {
     while (1) {
         handlePendingRequests();
+    }
+}
+
+void jsonserver::responseThread()
+{
+    while (1) {
+        //Send the response to the clients
+        mtx_pendingResponse.lock();
+        //Check if the response returned is valid
+        if (pendingResponse.size() > 0) {
+            jsonRequest response = pendingResponse.front();
+            pendingResponse.pop_front();
+            mtx_pendingResponse.unlock();
+            this->sendResponse(response.conn, response.keys);
+            measureTime("Total response time: ", response.receiveTime);
+        } else {
+            mtx_pendingResponse.unlock();
+        }
     }
 }
 
@@ -216,16 +239,11 @@ int jsonserver::handlePendingRequests()
         //Send the request to the PLC
         this->readVariables(keys);
 
-        //Measure the response time
-        start = std::chrono::high_resolution_clock::now();
-
-        //Send the response to the clients
-        for ( auto r : currentRequest) {
-            this->sendResponse(r.second.conn, r.second.keys);
-            measureTime("Total response time: ", r.second.receiveTime);
+        mtx_pendingResponse.lock();
+        for ( auto kv : currentRequest) {
+            pendingResponse.push_back(kv.second);
         }
-
-        measureTime("Response time: ", start);
+        mtx_pendingResponse.unlock();
     }
     return 0;
 }

@@ -1,29 +1,6 @@
-To start a new hmi using the widget system
+HOW TO RUN THE HMI
 
-```
-lpm init
-lpm install widget-template
-```
+One time setup: in root directory of HMI, run `npm install` on the command line.
+This creates the node_modules folder and installs packages the HMI depends on.
 
-If you want to install the local gizmo by file add the directory:
-```
-"@loupeteam/widgets-[mygizmo]": "file:../../src/hmi"
-```
-Run npm install
-
-```
-//Example local file module depencency
-{
-  "name": "hmi",
-  "version": "1.0.0",
-   ...
-  "dependencies": {
-    "@loupeteam/widgets-mygizmo": "file:../../src/hmi"
-  }
-}
-```
-
-If you want to install widgets from a package run lpm install
-```
-lpm install widgets-[mygizmo]
-```
+Run `runHMI.cmd` from the `/scripts` folder.

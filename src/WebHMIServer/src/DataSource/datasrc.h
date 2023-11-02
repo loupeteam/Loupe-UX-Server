@@ -4,13 +4,15 @@
 #include <string>
 #include "crow_all.h"
 
-
 class DataSource {
-  /* data */
+    /* data */
 public:
 
-  virtual crow::json::wvalue getVariable(std::string symbolName){ return crow::json::wvalue{}; };
-  
+    virtual void readSymbolValue(std::string symbolName){ }
+    virtual void readSymbolValue(std::vector<std::string> symbolNames){ }
+    virtual void writeSymbolValue(crow::json::rvalue packet){ }
+
+    virtual crow::json::wvalue getSymbolValue(std::string symbolName){ return crow::json::wvalue{}; }
 };
 
 #endif // ADSDATASRC_H

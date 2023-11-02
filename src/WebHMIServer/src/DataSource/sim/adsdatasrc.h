@@ -3,15 +3,14 @@
 #include "../datasrc.h"
 #include <string>
 
-class adsdatasrc : public DataSource{
+class adsdatasrc : public DataSource {
 private:
-    void * _impl;
+    void* _impl;
 public:
-  adsdatasrc(/* args */);
-  ~adsdatasrc();
+    adsdatasrc(/* args */);
+    ~adsdatasrc();
 
-  virtual crow::json::wvalue getVariable(std::string symbolName);
-
+    virtual crow::json::wvalue getVariable(std::string symbolName);
 };
 
 #endif // ADSDATASRC_H

@@ -18,3 +18,4 @@ target_link_libraries(server PUBLIC jsonserver)
 target_include_directories(server PUBLIC $<TARGET_PROPERTY:jsonserver,INTERFACE_INCLUDE_DIRECTORIES>)
 
 target_link_libraries(server PUBLIC adsdatasrc)
+target_link_libraries(server PUBLIC util)

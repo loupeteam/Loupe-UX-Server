@@ -46,4 +46,9 @@ function createNewConnection(ip, port){
 setInterval(WEBHMI.updateHMI, 30)
 
 
-
+let writeTwo = function (tag, value) {
+  machine.MAIN.Lift1.configuration.Name = "Test 1";
+  machine.MAIN.Lift1.configuration.Active = 0;
+  machine.MAIN.Lift1.configuration.Simulation = 0;
+  machine.writeVariable('MAIN.Lift1')
+}

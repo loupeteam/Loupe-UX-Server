@@ -22,7 +22,5 @@
             "file": "./app/views/nav.handlebars"
         }
     ],
-    "libraries": [
-        "./app/controls/custom-ui.handlebars"
-    ]
+    "libraries": []
 }

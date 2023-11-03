@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="TestFubI" Id="{8d0b2799-e05e-4a58-a138-c13c87ba2f47}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK TestFubI IMPLEMENTS ITestInterface
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Property Name="TestPropGet" Id="{5479f36c-8a00-40de-b7c0-cd7ff34af1f4}">
+      <Declaration><![CDATA[{warning 'add property implementation'}
+PROPERTY TestPropGet : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{909b908d-fdcc-4f75-9525-f5180cd1f8da}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="TestPropGetSet" Id="{51b5260c-352c-49c2-935f-4e794d70b15e}">
+      <Declaration><![CDATA[{warning 'add property implementation'}
+PROPERTY TestPropGetSet : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{08ea1968-c23a-47d3-80de-f180a5e359d2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{ce426669-b118-4c2e-bf20-2b4fc56b0486}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="TestPropNoMon" Id="{5c397315-f0d5-45ee-a8e2-ca1bfe445c47}">
+      <Declaration><![CDATA[{warning 'add property implementation'}
+PROPERTY TestPropNoMon : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{af4d405b-1e91-46b2-a852-637869058f45}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{90f2580e-a645-406a-8bdf-234731055835}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="TestPropSet" Id="{f968e3da-0fec-474f-9956-6e59fc074004}">
+      <Declaration><![CDATA[{warning 'add property implementation'}
+PROPERTY TestPropSet : BOOL
+]]></Declaration>
+      <Set Name="Set" Id="{5f5a7766-fe88-49ef-88fa-360a76f0b252}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+  </POU>
+</TcPlcObject>

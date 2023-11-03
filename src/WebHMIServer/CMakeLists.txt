@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.11-3.18)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/joshpolansky/Documents/clients/loupe/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake)
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
      add_definitions(-D_USE_MATH_DEFINES)

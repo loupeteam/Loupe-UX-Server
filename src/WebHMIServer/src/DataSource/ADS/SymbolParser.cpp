@@ -164,6 +164,7 @@ BOOL CAdsParseSymbols::Symbol(UINT sym, CAdsSymbolInfo& info)
     }
     info.iGrp = pEntry->iGroup;
     info.iOffs = pEntry->iOffs;
+    info.offs = 0;
     info.size = pEntry->size;
     info.dataType = pEntry->dataType;
     info.flags = pEntry->flags;
@@ -257,6 +258,7 @@ BOOL CAdsParseSymbols::SubSymbolInfo(CAdsSymbolInfo& main, UINT sub, CAdsSymbolI
             if (sub < x[0]) {
                 info.iGrp = main.iGrp;
                 info.iOffs = main.iOffs;
+                info.offs = sub * baseSize;
                 info.size = baseSize;
                 info.dataType = pEntry->dataType;
                 info.flags = pEntry->flags;
@@ -322,6 +324,7 @@ BOOL CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymb
                 info.iGrp = 0;
                 info.iOffs = 0;
                 info.size = baseSize;
+                info.offs = sub * baseSize;
                 info.dataType = pEntry->dataType;
                 info.flags = pEntry->flags;
                 info.type = PADSDATATYPETYPE(pEntry);

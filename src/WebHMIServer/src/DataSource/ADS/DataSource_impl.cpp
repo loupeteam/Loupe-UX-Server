@@ -147,12 +147,17 @@ void adsdatasrc_impl::parseBuffer(crow::json::wvalue& variable,
 
     //If this is a basic data type, then we can parse it with the given parser
     if (datatype.memberCount() == 0) {
-        if (datatype.flags_struct.PROPITEM) {
+        if (datatype.flags_struct.PROPITEM && (datatype.handle == 0)) {
             //Not Parsed
             variable = "Property Item: " + datatype.type;
+            this->propertyReads.push_back(datatype.name);
         } else if (datatype.flags_struct.DATATYPE) {
             //Not Parsed
             variable = "Datatype: " + datatype.type;
+        } else if (datatype.readFail == true) {
+            //Not Parsed
+            // variable = "Property Item: " + datatype.type;
+            variable.clear();
         } else {
             if (!dataType_member_base::parse(datatype.dataType, variable, buffer, size)) {
                 //Not Parsed
@@ -185,9 +190,10 @@ bool adsdatasrc_impl::encodeBuffer(std::string&  variable,
     if (datatype.valid == true) {
         //If this is a basic data type, then we can parse it with the given parser
         if (datatype.memberCount() == 0) {
-            if (datatype.flags_struct.PROPITEM) {
+            /*if (datatype.flags_struct.PROPITEM) {
                 return false;
-            } else if (datatype.flags_struct.DATATYPE) {
+               } else */
+            if (datatype.flags_struct.DATATYPE) {
                 return false;
             } else {
                 if (!dataType_member_base::encode(datatype.dataType, buffer, value, datatype.size)) {

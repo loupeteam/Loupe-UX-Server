@@ -35,6 +35,7 @@ adsdatasrc::~adsdatasrc()
     delete impl;
 }
 
+//Read the symbol and datatype data from the PLC
 void adsdatasrc::readPlcData()
 {
     while (impl->readInfo() != 0) {
@@ -43,8 +44,10 @@ void adsdatasrc::readPlcData()
     }
 }
 
+//Check if we have read the PLC data
 bool adsdatasrc::ready() { return impl->ready; }
 
+//Read the value of a single symbol
 void adsdatasrc::readSymbolValue(std::string symbolName)
 {
     if (!ready()) {
@@ -52,30 +55,71 @@ void adsdatasrc::readSymbolValue(std::string symbolName)
     }
 
     //Get the symbol info
-    symbolMetadata info = impl->findInfo(symbolName);
+    symbolMetadata& info = impl->findInfo(symbolName);
+
+    //If read failed we assume the value is read only
+    if (info.readFail) {
+        crow::json::wvalue& var = impl->findValue(symbolName);
+        var = string("No Getter");
+        return;
+    }
+
+    if ((info.flags_struct.PROPITEM == true) && (info.handle == 0)) {
+        getSymbolHandle(symbolName);
+    }
 
     //Allocate a buffer for the data
     unsigned long size = info.size;
     BYTE* buffer = new BYTE[size];
-
-    // Read a variable from ADS
-    long nResult = AdsSyncReadReq(impl->pAddr, info.group, info.offset, size, buffer);
+    long nResult;
+    if (info.flags_struct.PROPITEM) {
+        // Read value of a PLC variable (by handle)
+        nResult = AdsSyncReadReq(impl->pAddr, ADSIGRP_SYM_VALBYHND, info.handle, size, buffer);
+    } else {
+        // Read a variable from ADS
+        nResult = AdsSyncReadReq(impl->pAddr, info.group, info.offset, size, buffer);
+    }
 
     //Parse the buffer into the variable
     if (nResult == ADSERR_NOERR) {
+        info.readFail = false;
         crow::json::wvalue& var = impl->findValue(symbolName);
         impl->parseBuffer(var, info, buffer, size);
     } else {
-        cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
+        crow::json::wvalue& var = impl->findValue(symbolName);
+
+        //This error means that we just couldn't read the address. Probably null
+        if (nResult == 1793) {
+            info.readFail = true;
+        }
+        //This error means there isn't a getter for this property
+        else if (nResult == 1796) {
+            var.clear();
+        } else {
+            var = string("Error ") + to_string(nResult);
+            cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
+        }
     }
 
     delete[] buffer;
 }
 
-void adsdatasrc::readSymbolValue(std::vector<std::string> symbolNames)
+//Read the value of a list of symbols
+void adsdatasrc::readSymbolValue(std::vector<std::string> reqSymbolNames)
 {
     if (!ready()) {
         return;
+    }
+
+    std::vector<std::string> symbolNames;
+    symbolNames.reserve(reqSymbolNames.size() + impl->propertyReads.size());
+    symbolNames.insert(symbolNames.end(), reqSymbolNames.begin(), reqSymbolNames.end());
+
+    //Go through the properties and add them to the list if they are within the structure
+    for (auto property : impl->propertyReads) {
+        if (std::find(symbolNames.begin(), symbolNames.end(), property) == symbolNames.end()) {
+            symbolNames.push_back(property);
+        }
     }
 
     //Allocate a buffer for the data
@@ -87,9 +131,18 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> symbolNames)
     unsigned long size = 0;
     for (auto symbolName : symbolNames) {
         symbolMetadata info = impl->findInfo(symbolName);
-        parReqPop->indexGroup = info.group;
-        parReqPop->indexOffset = info.gOffset;
-        parReqPop->length = info.size;
+        if (info.flags_struct.PROPITEM) {
+            if (info.handle == 0) {
+                getSymbolHandle(symbolName);
+            }
+            parReqPop->indexGroup = ADSIGRP_SYM_VALBYHND;
+            parReqPop->indexOffset = info.handle;
+            parReqPop->length = info.size;
+        } else {
+            parReqPop->indexGroup = info.group;
+            parReqPop->indexOffset = info.gOffset;
+            parReqPop->length = info.size;
+        }
         parReqPop++;
         size += info.size;
     }
@@ -121,12 +174,25 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> symbolNames)
         for (auto symbolName : symbolNames) {
             long result = *(long*)pObjAdsErrRes;
             pObjAdsErrRes += 4;
+            symbolMetadata& info = impl->findInfo(symbolName);
+            crow::json::wvalue& var = impl->findValue(symbolName);
             if (result != ADSERR_NOERR) {
-                cerr << "Error: AdsSyncReadReq: " << result << '\n';
+                cerr << "Error: AdsSyncReadReq: " << result << " " << symbolName << '\n';
+                var = string("Error ") + to_string(result);
+                if (result == 1793) {}
+                //This error means there isn't a getter for this property
+                else if (result == 1796) {
+                    info.readFail = true;
+                    var.clear();
+                    //Remove this symbol fromt he reads
+                    impl->propertyReads.erase(std::remove(impl->propertyReads.begin(),
+                                                          impl->propertyReads.end(),
+                                                          symbolName),
+                                              impl->propertyReads.end());
+                }
+                pdata += info.size;
                 continue;
             }
-            crow::json::wvalue& var = impl->findValue(symbolName);
-            symbolMetadata& info = impl->findInfo(symbolName);
             impl->parseBuffer(var, info, pdata, info.size);
             pdata += info.size;
         }
@@ -140,32 +206,39 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> symbolNames)
     delete[] parReq;
 }
 
-void adsdatasrc::writeSymbolValue(std::string symbolName)
+//Get a handle to symbols that are not variables
+void adsdatasrc::getSymbolHandle(std::string symbolName)
 {
-    if (!impl->ready) {
+    if (!ready()) {
         return;
     }
 
-    symbolMetadata info = impl->findInfo(symbolName);
-    unsigned long size = info.size;
-    BYTE* buffer = new BYTE[size];
-
-    // Read a variable from ADS
-    long nResult = AdsSyncReadReq(impl->pAddr, info.group, info.offset, size, buffer);
-
-    if (nResult == ADSERR_NOERR) {
-        crow::json::wvalue& var = impl->findValue(symbolName);
-        impl->parseBuffer(var,
-                          info,
-                          buffer,
-                          size);
-    } else {
-        cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
+    //Get the symbol info
+    symbolMetadata& info = impl->findInfo(symbolName);
+    if (info.handle == 0) {
+        // Fetch handle for an <szVar> PLC variable
+        long nResult = AdsSyncReadWriteReq(impl->pAddr,
+                                           ADSIGRP_SYM_HNDBYNAME,
+                                           0x0,
+                                           sizeof(info.handle),
+                                           &info.handle,
+                                           info.name.size(),
+                                           (void*)info.name.c_str());
+        //Parse the buffer into the variable
+        if (nResult == ADSERR_NOERR) {
+            cout << "success?";
+        } else {
+            cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
+        }
     }
-
-    delete[] buffer;
 }
 
+//Get a handle to a list of symbols that are not variables
+void adsdatasrc::getSymbolHandle(std::vector<std::string> symbolNames)
+{
+}
+
+//Go through the structure and gather all the names of the members that are base types
 void adsdatasrc::gatherBaseTypeNames_Member(crow::json::rvalue& member, std::string prefix,
                                             std::vector<pair<std::string, std::string> >& names)
 {
@@ -177,11 +250,15 @@ void adsdatasrc::gatherBaseTypeNames_Member(crow::json::rvalue& member, std::str
         symbolMetadata info = impl->findInfo(prefix);
         if (info.flags_struct.DATATYPE) {
             cout << "Can't write datatype: " << prefix << ", Skipping" << endl;
-        } else if (info.flags_struct.PROPITEM) {
+        }
+        /*else if (info.flags_struct.PROPITEM) {
+            // this->getSymbolHandle(prefix);
             cout << "Can't write property: " << prefix << ", Skipping" << endl;
-        } else if (info.flags_struct.METHODDEREF) {
+           }
+           else if (info.flags_struct.METHODDEREF) {
             cout << "Can't write METHODDEREF: " << prefix << ", Skipping" << endl;
-        } else if (info.size == 0) {
+           } */
+        else if (info.size == 0) {
             cout << "Can't write size 0: " << prefix << ", Skipping" << endl;
         } else if ((info.size > 8) && (info.dataType == 65)) {
             cout << "Can't write single structure greater than 8 with no members: " << prefix << ", Skipping" << endl;
@@ -190,6 +267,7 @@ void adsdatasrc::gatherBaseTypeNames_Member(crow::json::rvalue& member, std::str
         }
     }
 }
+
 //Go through the structure and gather all the names of the members that are base types
 void adsdatasrc::gatherBaseTypeNames(crow::json::rvalue&              packet,
                                      std::string&                     prefix,
@@ -211,7 +289,7 @@ void adsdatasrc::gatherBaseTypeNames(crow::json::rvalue&              packet,
         }
     }
 }
-
+//Write the value of a json packet to the PLC
 void adsdatasrc::writeSymbolValue(crow::json::rvalue packet)
 {
     if (!ready()) {
@@ -226,6 +304,9 @@ void adsdatasrc::writeSymbolValue(crow::json::rvalue packet)
     //Go through and figure out how much space and how many requests we need
     for (auto symbolName : symbolNames) {
         symbolMetadata& info = impl->findInfo(symbolName.first);
+        if (info.flags_struct.PROPITEM && (info.handle == 0)) {
+            getSymbolHandle(symbolName.first);
+        }
         if (info.valid == true) {
             reqNum++;
             size += info.size;
@@ -242,9 +323,16 @@ void adsdatasrc::writeSymbolValue(crow::json::rvalue packet)
     for (auto symbolName : symbolNames) {
         if (impl->encodeBuffer(symbolName.first, pdata, symbolName.second, size)) {
             symbolMetadata info = impl->findInfo(symbolName.first);
-            parReqPop->indexGroup = info.group;
-            parReqPop->indexOffset = info.gOffset;
-            parReqPop->length = info.size;
+
+            if (info.handle) {
+                parReqPop->indexGroup = ADSIGRP_SYM_VALBYHND;
+                parReqPop->indexOffset = info.handle;
+                parReqPop->length = info.size;
+            } else {
+                parReqPop->indexGroup = info.group;
+                parReqPop->indexOffset = info.gOffset;
+                parReqPop->length = info.size;
+            }
             pdata += info.size;
             parReqPop++;
         } else {
@@ -270,6 +358,15 @@ void adsdatasrc::writeSymbolValue(crow::json::rvalue packet)
 
     if (nResult == ADSERR_NOERR) {
         cout << "success?";
+        long* pResult = (long*)mAdsSumBufferRes;
+        //Output the individual statuses
+        for (auto symbolName : symbolNames) {
+            long result = *pResult;
+            pResult += 4;
+            if (result != ADSERR_NOERR) {
+                cerr << "Error: AdsSyncReadReq: " << result << " " << symbolName.first << '\n';
+            }
+        }
     } else {
         cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
     }

@@ -432,6 +432,7 @@ datatype_flags_struct::datatype_flags_struct(ULONG flags, bool symbol)
         this->TYPEGUID = (flags & ADSSYMBOLFLAG_TYPEGUID);
         this->PERSISTENT = (flags & ADSSYMBOLFLAG_PERSISTENT);
         this->TCCOMIFACEPTR = (flags & ADSSYMBOLFLAG_TCCOMIFACEPTR);
+        this->mask = (flags & ADSSYMBOLFLAG_CONTEXTMASK) >> 16;
     } else {
         this->DATATYPE = (flags & ADSDATATYPEFLAG_DATATYPE);
         this->DATAITEM = (flags & ADSDATATYPEFLAG_DATAITEM);
@@ -447,5 +448,6 @@ datatype_flags_struct::datatype_flags_struct(ULONG flags, bool symbol)
         this->METHODINFOS = (flags & ADSDATATYPEFLAG_METHODINFOS);
         this->ATTRIBUTES = (flags & ADSDATATYPEFLAG_ATTRIBUTES);
         this->ENUMINFOS = (flags & ADSDATATYPEFLAG_ENUMINFOS);
+        this->mask = (flags & ADSSYMBOLFLAG_CONTEXTMASK) >> 16;
     }
 }

@@ -147,21 +147,25 @@ void adsdatasrc_impl::parseBuffer(crow::json::wvalue& variable,
 
     //If this is a basic data type, then we can parse it with the given parser
     if (datatype.memberCount() == 0) {
-        if (datatype.flags_struct.PROPITEM && (datatype.handle == 0)) {
+        // Read failed means that we attempted to read it and go an error
+        //  This usually means that the variable is not available
+        if (datatype.readFail == true) {
             //Not Parsed
-            variable = "Property Item: " + datatype.type;
-            this->propertyReads.push_back(datatype.name);
-        } else if (datatype.flags_struct.DATATYPE) {
-            //Not Parsed
-            variable = "Datatype: " + datatype.type;
-        } else if (datatype.readFail == true) {
-            //Not Parsed
-            // variable = "Property Item: " + datatype.type;
             variable.clear();
+        }
+        //If this is a property item, then we need to to get a handle to it
+        // before we can read it
+        else if ((datatype.flags_struct.PROPITEM == true) && (datatype.handle == 0)) {
+            //Not Parsed
+            variable.clear();
+            //If we have not read this property yet, then we need to read it
+            this->propertyReads.push_back(datatype.name);
         } else {
             if (!dataType_member_base::parse(datatype.dataType, variable, buffer, size)) {
                 //Not Parsed
-                variable = "Not Parsed: " + datatype.type;
+                variable.clear();
+            } else {
+                //Parsed
             }
         }
     } else {
@@ -190,9 +194,6 @@ bool adsdatasrc_impl::encodeBuffer(std::string&  variable,
     if (datatype.valid == true) {
         //If this is a basic data type, then we can parse it with the given parser
         if (datatype.memberCount() == 0) {
-            /*if (datatype.flags_struct.PROPITEM) {
-                return false;
-               } else */
             if (datatype.flags_struct.DATATYPE) {
                 return false;
             } else {

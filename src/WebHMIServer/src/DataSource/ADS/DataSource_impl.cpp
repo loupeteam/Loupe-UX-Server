@@ -15,7 +15,7 @@ adsdatasrc_impl::~adsdatasrc_impl()
     }
 }
 
-bool adsdatasrc_impl::getMemberInfo(std::string targetSymbol, CAdsSymbolInfo main)
+bool adsdatasrc_impl::getMemberInfo(string targetSymbol, CAdsSymbolInfo main)
 {
     if (!main.m_pEntry) {
         main.m_pEntry = parsedSymbols->GetTypeByName(main.type);
@@ -27,7 +27,7 @@ bool adsdatasrc_impl::getMemberInfo(std::string targetSymbol, CAdsSymbolInfo mai
     return false;
 }
 
-bool adsdatasrc_impl::getMemberInfo(std::string       targetSymbol,
+bool adsdatasrc_impl::getMemberInfo(string            targetSymbol,
                                     PAdsDatatypeEntry Entry,
                                     string            prefix,
                                     unsigned long     group,
@@ -125,7 +125,7 @@ long adsdatasrc_impl::readInfo()
     return nResult;
 }
 
-bool adsdatasrc_impl::cacheSymbolInfo(std::string symbolName)
+bool adsdatasrc_impl::cacheSymbolInfo(string symbolName)
 {
     CAdsSymbolInfo Entry;
     this->parsedSymbols->Symbol(symbolName, Entry);
@@ -182,9 +182,9 @@ void adsdatasrc_impl::parseBuffer(crow::json::wvalue& variable,
     }
 }
 
-bool adsdatasrc_impl::encodeBuffer(std::string&  variable,
+bool adsdatasrc_impl::encodeBuffer(string&       variable,
                                    void*         pBuffer,
-                                   std::string&  value,
+                                   string&       value,
                                    unsigned long size)
 {
     BYTE* buffer = (BYTE*)pBuffer;
@@ -210,7 +210,7 @@ bool adsdatasrc_impl::encodeBuffer(std::string&  variable,
     return true;
 }
 
-symbolMetadata& adsdatasrc_impl::findInfo(std::string& symbolName)
+symbolMetadata& adsdatasrc_impl::findInfo(string& symbolName)
 {
     symbolMetadata& info = this->symbolInfo[symbolName];
     if ((info.cacheComplete == false) && !info.notFound) {
@@ -219,16 +219,16 @@ symbolMetadata& adsdatasrc_impl::findInfo(std::string& symbolName)
     return info;
 }
 
-crow::json::wvalue& adsdatasrc_impl::findValue(std::string& symbolName)
+crow::json::wvalue& adsdatasrc_impl::findValue(string& symbolName)
 {
     crow::json::wvalue& ret = find(symbolName, this->symbolData);
     return ret;
 }
 
-crow::json::wvalue& adsdatasrc_impl::find(std::string symbolName, crow::json::wvalue& datasource)
+crow::json::wvalue& adsdatasrc_impl::find(string symbolName, crow::json::wvalue& datasource)
 {
     toLower(symbolName);
-    std::deque<std::string> path = splitVarName(symbolName, ".[");
+    deque<string> path = splitVarName(symbolName, ".[");
     crow::json::wvalue* ret = &datasource[path[0]];
     for ( size_t i = 1; i < path.size(); i++) {
         crow::json::wvalue* data;
@@ -239,7 +239,7 @@ crow::json::wvalue& adsdatasrc_impl::find(std::string symbolName, crow::json::wv
 }
 
 void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
-                                         std::string&    symbolName,
+                                         string&         symbolName,
                                          unsigned long   parentGroup,
                                          unsigned long   parentOffset,
                                          CAdsSymbolInfo& info)
@@ -259,7 +259,7 @@ void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
 }
 
 void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
-                                         std::string&    symbolName,
+                                         string&         symbolName,
                                          CAdsSymbolInfo& info)
 {
     symbol.name = symbolName;
@@ -277,7 +277,7 @@ void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
 }
 
 PAdsSymbolEntry adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
-                                                    std::string&    symbolName,
+                                                    string&         symbolName,
                                                     PAdsSymbolEntry pAdsSymbolEntry)
 {
     symbol.name = symbolName;

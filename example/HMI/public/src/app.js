@@ -12,5 +12,7 @@ machine.initCyclicRead('MAIN.MyFub')
 let writeStructure = function (tag, value) {
   machine.MAIN.MyFub._STRING = "Test 1";
   machine.MAIN.MyFub.TestPropGetSet = 1;
+  machine.MAIN.MyFub.TestPropGet = 1;
+  machine.MAIN.MyFub.Incrementing = 1000;
   machine.writeVariable('MAIN.MyFub')
 }

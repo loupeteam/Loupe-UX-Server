@@ -16,8 +16,7 @@ adsdatasrc::adsdatasrc()
     impl->nPort = AdsPortOpen();
 
     // set default communication parameters
-    NetIDType netId = {192, 168, 0, 1, 1, 1};
-    this->setPlcCommunicationParameters(netId, 851);
+    this->setPlcCommunicationParameters("192.168.0.1.1.1", 851);
 
     static_impl = impl;
 }
@@ -32,13 +31,50 @@ adsdatasrc::~adsdatasrc()
 }
 
 
-void adsdatasrc::setPlcCommunicationParameters(NetIDType netId, uint16_t port)
+void adsdatasrc::setPlcCommunicationParameters(std::string netId, uint16_t port)
 {
 
-    for (int i = 0; i < 6; i++) {
-        impl->Addr.netId.b[i] = netId.b[i];
+    const int REQUIRED_NUM_NET_ID_PARTS = 6;
+    const int NETID_PART_MIN = 0;
+    const int NETID_PART_MAX = 255;
+    unsigned char tempNetIdPartArr[REQUIRED_NUM_NET_ID_PARTS];
+
+    std::deque<std::string> netIdParts = split(netId, '.');
+
+    // Check Deque size
+    if (netIdParts.size() != REQUIRED_NUM_NET_ID_PARTS) {
+        cerr << "Could not process netID.";
+        return;
+    }
+
+    // Convert each part into integer. Check if within limits.
+    for (int i = 0; i < REQUIRED_NUM_NET_ID_PARTS; i++) {
+        
+        try {
+            std::string temp = netIdParts.front();
+            int n = std::stoi(temp, nullptr);
+
+            if ((n >= NETID_PART_MIN) && (n <= NETID_PART_MAX)) {
+                tempNetIdPartArr[i] = n;
+            }
+            else {
+                cerr << "Out-of-range part of netID.";
+                return;
+            }
+            
+            netIdParts.pop_front();
+        }
+        catch(...) {
+            cerr << "Could not process part of netID.";
+            return;
+        } 
     }
     
+    // If no errors, assign netID parts
+    for (int i = 0; i < REQUIRED_NUM_NET_ID_PARTS; i++) {
+        impl->Addr.netId.b[i] = tempNetIdPartArr[i];
+    }
+
     impl->pAddr->port = port;
 }
 

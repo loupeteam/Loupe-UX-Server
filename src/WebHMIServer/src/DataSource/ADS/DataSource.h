@@ -3,9 +3,6 @@
 #include "../datasrc.h"
 #include <string>
 
-struct NetIDType {
-    unsigned char b[6];
-};
 
 class adsdatasrc : public DataSource {
 private:
@@ -20,7 +17,7 @@ public:
     adsdatasrc(/* args */);
     ~adsdatasrc();
 
-    void setPlcCommunicationParameters(NetIDType netID, uint16_t port);
+    void setPlcCommunicationParameters(std::string netID, uint16_t port);
 
     void readSymbolValue(std::string symbolName);
     void readSymbolValue(std::vector<std::string> symbolNames);

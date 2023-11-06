@@ -28,7 +28,7 @@ At the present time, this server is capable of connection to Beckhoff PLCs, usin
 * (Optional) Visual Studio Community 2019. If this is not installed, you will need to modify the below commands to select the generator you wish to use.
 
 
-### Building server from source with Cmake 
+#### Building server from source with Cmake 
 
 
 1. Change directory to the following folder within the repo
@@ -60,7 +60,17 @@ cmake -G "Visual Studio 16 2019" -S . -B ./cmakebuild -A win32
 cmake --build ./cmakebuild --config Release --target server
 ```
 
-6. Once building is complete with no errors, you can run the server with:
+6. Once building is complete with no errors, the executable is located at:
 ```CMD
 .\cmakebuild\src\server\Release\server.exe
 ```
+
+#### Configuring and Running the Server
+
+1. Open `configuration.json`. It should be located in the current working directory (`<path_to_repo>/src/WebHMIServer/`)
+2. Modify the JSON contents as necessary, setting netID of your PLC and ADS Port number. NOTE: By default, the Twincat ADS server will listen on port 851.
+3. Run the the server with:
+```CMD
+.\cmakebuild\src\server\Release\server.exe
+```
+If everything has been set up correctly, your webHMI client should now be able to interface with your Beckhoff TwinCat PLC.

@@ -14,14 +14,10 @@ adsdatasrc::adsdatasrc()
     _impl = new adsdatasrc_impl();
     //TODO: Make this configurable
     impl->nPort = AdsPortOpen();
-    impl->Addr.netId.b[0] = 192;
-    impl->Addr.netId.b[1] = 168;
-    impl->Addr.netId.b[2] = 0;
-    impl->Addr.netId.b[3] = 46;
-    impl->Addr.netId.b[4] = 1;
-    impl->Addr.netId.b[5] = 1;
 
-    impl->pAddr->port = 851;
+    // set default communication parameters
+    unsigned char netId[6] = {192, 168, 0, 1, 1, 1};
+    this->setPlcCommunicationParameters(netId, 851);
 
     static_impl = impl;
 }
@@ -34,6 +30,18 @@ adsdatasrc::~adsdatasrc()
     }
     delete impl;
 }
+
+
+void adsdatasrc::setPlcCommunicationParameters(unsigned char netId[6], uint16_t port)
+{
+
+    for (int i = 0; i < 6; i++) {
+        impl->Addr.netId.b[i] = netId[i];
+    }
+    
+    impl->pAddr->port = 851;
+}
+
 
 void adsdatasrc::readPlcData()
 {

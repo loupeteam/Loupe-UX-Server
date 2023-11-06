@@ -16,6 +16,8 @@ public:
     adsdatasrc(/* args */);
     ~adsdatasrc();
 
+    void setPlcCommunicationParameters(unsigned char netID[6], uint16_t port);
+
     void readSymbolValue(std::string symbolName);
     void readSymbolValue(std::vector<std::string> symbolNames);
 

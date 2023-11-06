@@ -39,7 +39,7 @@ void adsdatasrc::setPlcCommunicationParameters(NetIDType netId, uint16_t port)
         impl->Addr.netId.b[i] = netId.b[i];
     }
     
-    impl->pAddr->port = 851;
+    impl->pAddr->port = port;
 }
 
 

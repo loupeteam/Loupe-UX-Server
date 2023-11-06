@@ -164,6 +164,7 @@ BOOL CAdsParseSymbols::Symbol(UINT sym, CAdsSymbolInfo& info)
     }
     info.iGrp = pEntry->iGroup;
     info.iOffs = pEntry->iOffs;
+    info.offs = 0;
     info.size = pEntry->size;
     info.dataType = pEntry->dataType;
     info.flags = pEntry->flags;
@@ -257,6 +258,7 @@ BOOL CAdsParseSymbols::SubSymbolInfo(CAdsSymbolInfo& main, UINT sub, CAdsSymbolI
             if (sub < x[0]) {
                 info.iGrp = main.iGrp;
                 info.iOffs = main.iOffs;
+                info.offs = sub * baseSize;
                 info.size = baseSize;
                 info.dataType = pEntry->dataType;
                 info.flags = pEntry->flags;
@@ -322,6 +324,7 @@ BOOL CAdsParseSymbols::SubSymbolInfo(PAdsDatatypeEntry Entry, UINT sub, CAdsSymb
                 info.iGrp = 0;
                 info.iOffs = 0;
                 info.size = baseSize;
+                info.offs = sub * baseSize;
                 info.dataType = pEntry->dataType;
                 info.flags = pEntry->flags;
                 info.type = PADSDATATYPETYPE(pEntry);
@@ -432,6 +435,7 @@ datatype_flags_struct::datatype_flags_struct(ULONG flags, bool symbol)
         this->TYPEGUID = (flags & ADSSYMBOLFLAG_TYPEGUID);
         this->PERSISTENT = (flags & ADSSYMBOLFLAG_PERSISTENT);
         this->TCCOMIFACEPTR = (flags & ADSSYMBOLFLAG_TCCOMIFACEPTR);
+        this->mask = (flags & ADSSYMBOLFLAG_CONTEXTMASK) >> 16;
     } else {
         this->DATATYPE = (flags & ADSDATATYPEFLAG_DATATYPE);
         this->DATAITEM = (flags & ADSDATATYPEFLAG_DATAITEM);
@@ -447,5 +451,6 @@ datatype_flags_struct::datatype_flags_struct(ULONG flags, bool symbol)
         this->METHODINFOS = (flags & ADSDATATYPEFLAG_METHODINFOS);
         this->ATTRIBUTES = (flags & ADSDATATYPEFLAG_ATTRIBUTES);
         this->ENUMINFOS = (flags & ADSDATATYPEFLAG_ENUMINFOS);
+        this->mask = (flags & ADSSYMBOLFLAG_CONTEXTMASK) >> 16;
     }
 }

@@ -22,6 +22,9 @@ public:
     void readSymbolValue(std::string symbolName);
     void readSymbolValue(std::vector<std::string> symbolNames);
 
+    void getSymbolHandle(std::string symbolName);
+    void getSymbolHandle(std::vector<std::string> symbolNames);
+
     void writeSymbolValue(std::string symbolName);
     void writeSymbolValue(crow::json::rvalue symbolNames);
 

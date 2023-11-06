@@ -45,6 +45,15 @@ void adsdatasrc::setPlcCommunicationParameters(NetIDType netId, uint16_t port)
 
 void adsdatasrc::readPlcData()
 {
+    cout << "Attempting to connect to NetID " << \
+            (int)impl->Addr.netId.b[0] << '.' << \
+            (int)impl->Addr.netId.b[1] << '.' << \
+            (int)impl->Addr.netId.b[2] << '.' << \
+            (int)impl->Addr.netId.b[3] << '.' << \
+            (int)impl->Addr.netId.b[4] << '.' << \
+            (int)impl->Addr.netId.b[5] << \
+            " on Port " << impl->pAddr->port << " ..." << '\n';
+
     while (impl->readInfo() != 0) {
         Sleep(1000);
         cerr << "No PLC Connections, will try again " << '\n';

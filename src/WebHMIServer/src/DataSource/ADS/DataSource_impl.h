@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <map>
 typedef int BOOL;
 typedef unsigned long ULONG;
 typedef ULONG* PULONG;
@@ -20,7 +21,10 @@ class adsdatasrc_impl {
     void parseSymbols(void* pSymbols, unsigned int nSymSize);
     void parseDatatypes(void* pDatatypes, unsigned int nDTSize);
     bool supportType(ULONG flags);
+
 public:
+    bool readingProps = false;
+    std::vector<std::string> propertyReads;
     long readInfo();
     // void cacheDataTypes();
     bool cacheSymbolInfo(std::string symbolName);

@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="TestFub" Id="{27e452ef-afc1-49b0-80ef-1ff6bab85e84}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK TestFub
+VAR_INPUT
+	_INTERFACE : ITestInterface;	
+END_VAR
+VAR
+	_bool: BOOL;
+	_BYTE: BYTE;
+	_DATE: DATE;
+	_DATE_AND_TIME: DATE_AND_TIME;
+	_DINT: DINT;
+	_DT: DT;
+	_DWORD: DWORD;
+	_INT: INT;
+	_LINT: LINT;
+	_LREAL: LREAL;
+	_LTIME: LTIME;
+	_LWORD: LWORD;
+	_REAL: REAL;
+	_SINT: SINT;
+	_STRING: STRING;
+	_TIME: TIME;
+	_TIME_OF_DAY: TIME_OF_DAY;
+	_TOD: TOD;
+	_UDINT: UDINT;
+	_UINT: UINT;
+	_ULINT: ULINT;	
+	_USINT: USINT;	
+	_WORD: WORD;	
+	_WSTRING: WSTRING;	
+	_STRUCT : TestStructure;
+	_INTERFACEEmpty : ITestInterface;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="TestMethod" Id="{e12b4e46-e439-4dc6-9519-c5184f7aee30}">
+      <Declaration><![CDATA[METHOD TestMethod : UINT
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="TestPropGet" Id="{4b925d7c-8a60-4173-a99d-5e61e73432d9}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY TestPropGet : BOOL]]></Declaration>
+      <Get Name="Get" Id="{c9ca289f-e4a9-4a2f-aedc-3e7e5ff6a322}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="TestPropGetSet" Id="{b429e94c-a6c4-4be8-a03d-9ca0290e0a00}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY TestPropGetSet : BOOL]]></Declaration>
+      <Get Name="Get" Id="{d91cfdcd-b64e-4408-b4e9-75cdfe4d1158}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{af9e4aaf-24f2-4676-bb49-af8cec225dab}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="TestPropNoMon" Id="{edc4d2c9-04d6-442f-92ea-3db12de0a416}">
+      <Declaration><![CDATA[PROPERTY TestPropNoMon : BOOL]]></Declaration>
+      <Get Name="Get" Id="{74d1cdae-a298-4537-862d-b013a954b757}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{d35aeada-8236-489d-a341-fc629b1e25bf}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="TestPropSet" Id="{3900e016-66a3-4ecd-92c2-2aeaa15a02e2}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY TestPropSet : BOOL]]></Declaration>
+      <Set Name="Set" Id="{712d5dd1-37ad-4591-b9fa-7a23be1c3dd2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+  </POU>
+</TcPlcObject>

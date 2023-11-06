@@ -16,7 +16,7 @@ adsdatasrc::adsdatasrc()
     impl->nPort = AdsPortOpen();
 
     // set default communication parameters
-    unsigned char netId[6] = {192, 168, 0, 1, 1, 1};
+    NetIDType netId = {192, 168, 0, 1, 1, 1};
     this->setPlcCommunicationParameters(netId, 851);
 
     static_impl = impl;
@@ -32,11 +32,11 @@ adsdatasrc::~adsdatasrc()
 }
 
 
-void adsdatasrc::setPlcCommunicationParameters(unsigned char netId[6], uint16_t port)
+void adsdatasrc::setPlcCommunicationParameters(NetIDType netId, uint16_t port)
 {
 
     for (int i = 0; i < 6; i++) {
-        impl->Addr.netId.b[i] = netId[i];
+        impl->Addr.netId.b[i] = netId.b[i];
     }
     
     impl->pAddr->port = 851;

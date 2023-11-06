@@ -11,6 +11,9 @@ using namespace std;
 int main(int argc, char const* argv[])
 {
     adsdatasrc dataSource;
+
+    NetIDType netId = {192, 168, 0, 46, 1, 1};
+    dataSource.setPlcCommunicationParameters(netId, 851);
     dataSource.readPlcData();
 
     jsonserver server;

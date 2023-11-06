@@ -11,14 +11,21 @@ using namespace std;
 
 int main(int argc, char const* argv[])
 {
-    adsdatasrc dataSource;
-    
+    // Read configuration
     crow::json::rvalue cfg = crow::json::load(getFileContents("configuration.json"));
-    dataSource.setPlcCommunicationParameters(cfg["adsParameters"]["netID"].s(), cfg["adsParameters"]["port"].i());
-    dataSource.readPlcData();
+    
+    if (cfg["serverType"].s() == "ADS") {
+        adsdatasrc dataSource;
+        dataSource.setPlcCommunicationParameters(cfg["adsParameters"]["netID"].s(), cfg["adsParameters"]["port"].i());
+        dataSource.readPlcData();
 
-    jsonserver server;
-    server.addDataSource(dataSource);
-    server.start(8000, false);
+        jsonserver server;
+        server.addDataSource(dataSource);
+        server.start(8000, false);
+    }
+    else {
+        cerr << "Unsupported server type";
+    }
+
     return 0;
 }

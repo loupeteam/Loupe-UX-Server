@@ -41,6 +41,38 @@ void adsdatasrc::readPlcData()
         Sleep(1000);
         cerr << "No PLC Connections, will try again " << '\n';
     }
+    registerDUTChangeCallback();
+}
+
+// Callback function
+void __stdcall SymbolTableChanged(AmsAddr* pAddr, AdsNotificationHeader* pNotification, ULONG hUser)
+{
+    cout << "Symbol table changed" << endl;
+}
+
+void adsdatasrc::registerDUTChangeCallback()
+{
+    if (this->adsChangeHandle != 0) {
+        return;
+    }
+    long nErr;
+    AdsNotificationAttrib adsNotificationAttrib;
+
+    // Specify attributes of the notification
+    adsNotificationAttrib.cbLength = 1;
+    adsNotificationAttrib.nTransMode = ADSTRANS_SERVERONCHA;
+    adsNotificationAttrib.nMaxDelay = 5000000; // 500ms
+    adsNotificationAttrib.nCycleTime = 5000000; // 500ms
+
+    // Start notification for changes to the symbol table
+    nErr = AdsSyncAddDeviceNotificationReq(impl->pAddr,
+                                           ADSIGRP_SYM_VERSION,
+                                           0,
+                                           &adsNotificationAttrib,
+                                           SymbolTableChanged,
+                                           NULL,
+                                           &this->adsChangeHandle);
+    if (nErr) { cerr << "Error: AdsSyncAddDeviceNotificationReq: " << nErr << '\n';}
 }
 
 bool adsdatasrc::ready() { return impl->ready; }

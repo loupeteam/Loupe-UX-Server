@@ -6,12 +6,15 @@
 class adsdatasrc : public DataSource {
 private:
     void* _impl;
+    unsigned long adsChangeHandle = 0;
     void gatherBaseTypeNames(crow::json::rvalue&                                packet,
                              std::string&                                       prefix,
                              std::vector<std::pair<std::string, std::string> >& names);
     void gatherBaseTypeNames_Member(crow::json::rvalue&                                member,
                                     std::string                                        prefix,
                                     std::vector<std::pair<std::string, std::string> >& names);
+
+    void registerDUTChangeCallback();
 public:
     adsdatasrc(/* args */);
     ~adsdatasrc();

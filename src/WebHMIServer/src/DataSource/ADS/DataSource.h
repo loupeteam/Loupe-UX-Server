@@ -3,6 +3,7 @@
 #include "../datasrc.h"
 #include <string>
 
+
 class adsdatasrc : public DataSource {
 private:
     void* _impl;
@@ -15,6 +16,8 @@ private:
 public:
     adsdatasrc(/* args */);
     ~adsdatasrc();
+
+    void setPlcCommunicationParameters(std::string netID, uint16_t port);
 
     void readSymbolValue(std::string symbolName);
     void readSymbolValue(std::vector<std::string> symbolNames);

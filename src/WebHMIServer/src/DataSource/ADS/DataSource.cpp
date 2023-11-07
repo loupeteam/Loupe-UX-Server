@@ -14,14 +14,9 @@ adsdatasrc::adsdatasrc()
     _impl = new adsdatasrc_impl();
     //TODO: Make this configurable
     impl->nPort = AdsPortOpen();
-    impl->Addr.netId.b[0] = 192;
-    impl->Addr.netId.b[1] = 168;
-    impl->Addr.netId.b[2] = 0;
-    impl->Addr.netId.b[3] = 46;
-    impl->Addr.netId.b[4] = 1;
-    impl->Addr.netId.b[5] = 1;
 
-    impl->pAddr->port = 851;
+    // set default communication parameters
+    this->setPlcCommunicationParameters("127.0.0.1.1.1", 851);
 
     static_impl = impl;
 }
@@ -35,9 +30,67 @@ adsdatasrc::~adsdatasrc()
     delete impl;
 }
 
+
+void adsdatasrc::setPlcCommunicationParameters(std::string netId, uint16_t port)
+{
+
+    const int REQUIRED_NUM_NET_ID_PARTS = 6;
+    const int NETID_PART_MIN = 0;
+    const int NETID_PART_MAX = 255;
+    unsigned char tempNetIdPartArr[REQUIRED_NUM_NET_ID_PARTS];
+
+    std::deque<std::string> netIdParts = split(netId, '.');
+
+    // Check Deque size
+    if (netIdParts.size() != REQUIRED_NUM_NET_ID_PARTS) {
+        cerr << "Could not process netID.";
+        return;
+    }
+
+    // Convert each part into integer. Check if within limits.
+    for (int i = 0; i < REQUIRED_NUM_NET_ID_PARTS; i++) {
+        
+        try {
+            std::string temp = netIdParts.front();
+            int n = std::stoi(temp, nullptr);
+
+            if ((n >= NETID_PART_MIN) && (n <= NETID_PART_MAX)) {
+                tempNetIdPartArr[i] = n;
+            }
+            else {
+                cerr << "Out-of-range part of netID.";
+                return;
+            }
+            
+            netIdParts.pop_front();
+        }
+        catch(...) {
+            cerr << "Could not process part of netID.";
+            return;
+        } 
+    }
+    
+    // If no errors, assign netID parts
+    for (int i = 0; i < REQUIRED_NUM_NET_ID_PARTS; i++) {
+        impl->Addr.netId.b[i] = tempNetIdPartArr[i];
+    }
+
+    impl->pAddr->port = port;
+}
+
+
 //Read the symbol and datatype data from the PLC
 void adsdatasrc::readPlcData()
 {
+    cout << "Attempting to connect to NetID " << \
+            (int)impl->Addr.netId.b[0] << '.' << \
+            (int)impl->Addr.netId.b[1] << '.' << \
+            (int)impl->Addr.netId.b[2] << '.' << \
+            (int)impl->Addr.netId.b[3] << '.' << \
+            (int)impl->Addr.netId.b[4] << '.' << \
+            (int)impl->Addr.netId.b[5] << \
+            " on Port " << impl->pAddr->port << " ..." << '\n';
+
     while (impl->readInfo() != 0) {
         Sleep(1000);
         cerr << "No PLC Connections, will try again " << '\n';

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <vector>
 #include <regex>
 
@@ -67,4 +68,22 @@ double measureTime(std::string name, std::chrono::high_resolution_clock::time_po
     auto end = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     return elapsed.count() / 1000.0;
+}
+
+// Return the contents of the file as a string
+int getFileContents(std::string fileName, std::string& contents) {
+    // Open the file for reading
+    std::ifstream file(fileName);
+
+    if (file.is_open()) {
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        file.close();
+        contents = buffer.str();
+    } else {
+        std::cerr << "Failed to open the configuration file." << std::endl;
+        return -1;
+    }
+    
+    return 0;
 }

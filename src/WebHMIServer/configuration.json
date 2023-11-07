@@ -1,0 +1,7 @@
+{
+    "serverType": "ADS",
+    "adsParameters": {
+        "netID": "127.0.0.1.1.1",
+        "port": 851
+    }
+}

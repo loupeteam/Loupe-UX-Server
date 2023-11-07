@@ -4,7 +4,7 @@
 
 This WebHMI Json server processes read and write requests from webHMI clients* and processes the requests with a PLC. In other words, it acts as a middleman or gateway, translating the highlevel JSON requests into platform-specific data access.
 
-At the present time, this server is capable of connection to Beckhoff PLCs, using TwinCAT 3's built-in [ADS server](https://www.beckhoff.com/en-us/products/automation/twincat/tc1xxx-twincat-3-base/tc1000.html). In the future, additional PLC connections may be added
+At the present time, this server is capable of connection to Beckhoff PLCs, using TwinCAT 3's built-in [ADS server](https://www.beckhoff.com/en-us/products/automation/twincat/tc1xxx-twincat-3-base/tc1000.html). In the future, additional connection types may be added.
 
 
 

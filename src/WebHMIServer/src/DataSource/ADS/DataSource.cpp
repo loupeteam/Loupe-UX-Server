@@ -16,7 +16,7 @@ adsdatasrc::adsdatasrc()
     impl->nPort = AdsPortOpen();
 
     // set default communication parameters
-    this->setPlcCommunicationParameters("192.168.0.1.1.1", 851);
+    this->setPlcCommunicationParameters("127.0.0.1.1.1", 851);
 
     static_impl = impl;
 }

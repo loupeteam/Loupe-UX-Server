@@ -7,7 +7,12 @@
 
 using namespace std;
 
+//Note: This static impl is just to make debugging easier
 adsdatasrc_impl* static_impl;
+
+//TODO: prefer not use a single global variable
+//  But we need to be able to access the callback from a static function
+adsdatasrc* pAdsdatasrc = nullptr;
 
 adsdatasrc::adsdatasrc()
 {
@@ -21,9 +26,13 @@ adsdatasrc::adsdatasrc()
     impl->Addr.netId.b[4] = 1;
     impl->Addr.netId.b[5] = 1;
 
-    impl->pAddr->port = 851;
+    impl->Addr.port = 851;
 
+//    this->readPlcData();
+
+    //Note: This static impl is just to make debugging easier
     static_impl = impl;
+    pAdsdatasrc = this;
 }
 
 adsdatasrc::~adsdatasrc()
@@ -42,6 +51,41 @@ void adsdatasrc::readPlcData()
         Sleep(1000);
         cerr << "No PLC Connections, will try again " << '\n';
     }
+}
+
+void adsdatasrc::connect()
+{
+    //this->registerDUTChangeCallback();
+    this->readPlcData();
+}
+
+void __stdcall SymbolChangedCallback(AmsAddr* pAddr, AdsNotificationHeader* pNotification, unsigned long hUser)
+{
+    pAdsdatasrc->readPlcData();
+}
+
+void adsdatasrc::registerDUTChangeCallback()
+{
+    if (this->adsChangeHandle != 0) {
+        return;
+    }
+    long nErr;
+    AdsNotificationAttrib adsNotificationAttrib;
+
+    // Specify attributes of the notification
+    adsNotificationAttrib.cbLength = 1;
+    adsNotificationAttrib.nTransMode = ADSTRANS_SERVERONCHA;
+    adsNotificationAttrib.nMaxDelay = 50000; // 50ms
+    adsNotificationAttrib.nCycleTime = 50000; // 50ms
+    // Start notification for changes to the symbol table
+    nErr = AdsSyncAddDeviceNotificationReq(impl->pAddr,
+                                           ADSIGRP_SYM_VERSION,
+                                           0,
+                                           &adsNotificationAttrib,
+                                           SymbolChangedCallback,
+                                           0,
+                                           &this->adsChangeHandle);
+    if (nErr) { cerr << "Error: AdsSyncAddDeviceNotificationReq: " << nErr << '\n';}
 }
 
 //Check if we have read the PLC data

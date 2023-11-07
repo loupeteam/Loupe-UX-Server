@@ -66,6 +66,7 @@ public:
                                        PAdsSymbolEntry pAdsSymbolEntry);
 
     CAdsParseSymbols* parsedSymbols = NULL;
+    void SymbolTableChanged(AmsAddr*, AdsNotificationHeader*, unsigned long);
     bool ready = false;
 };
 

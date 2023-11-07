@@ -15,4 +15,4 @@ std::chrono::high_resolution_clock::time_point getTimestamp();
 double measureTime(std::string name, std::chrono::high_resolution_clock::time_point start);
 
 // File I/O
-std::string getFileContents(std::string fileName);
+int getFileContents(std::string fileName, std::string& contents);

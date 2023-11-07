@@ -12,8 +12,16 @@ using namespace std;
 int main(int argc, char const* argv[])
 {
     // Read configuration
-    crow::json::rvalue cfg = crow::json::load(getFileContents("configuration.json"));
-    
+    std::string configurationJsonString;
+    crow::json::rvalue cfg;
+    if (getFileContents("configuration.json", configurationJsonString) == 0) {
+        cfg = crow::json::load(configurationJsonString);
+    }
+    else {
+        cerr << "Could not open server configuration file";
+        return -1;
+    }
+
     if (cfg["serverType"].s() == "ADS") {
         adsdatasrc dataSource;
         dataSource.setPlcCommunicationParameters(cfg["adsParameters"]["netID"].s(), cfg["adsParameters"]["port"].i());

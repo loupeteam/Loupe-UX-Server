@@ -64,10 +64,9 @@ double measureTime(std::string name, std::chrono::high_resolution_clock::time_po
 
 
 // Return the contents of the file as a string
-std::string getFileContents(std::string fileName) {
+int getFileContents(std::string fileName, std::string& contents) {
     // Open the file for reading
     std::ifstream file(fileName);
-    std::string contents;
 
     if (file.is_open()) {
         std::stringstream buffer;
@@ -76,7 +75,8 @@ std::string getFileContents(std::string fileName) {
         contents = buffer.str();
     } else {
         std::cerr << "Failed to open the configuration file." << std::endl;
+        return -1;
     }
     
-    return contents;
+    return 0;
 }

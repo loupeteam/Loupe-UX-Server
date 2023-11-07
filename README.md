@@ -37,30 +37,24 @@ At the present time, this server is capable of connection to Beckhoff PLCs, usin
 cd <path_to_repo>/src/WebHMIServer
 ```
 
-2. Install vcpkg (C++ package manager) locally in the repo by running the following batch file
-
-```CMD
-.\vcpkg\bootstrap-vcpkg.bat
-```
-
-3. Optionally, you can output a list of available generators in cmake. Note which generator you would like to use. Here we will use "Visual Studio 16 2019".
+2. Optionally, you can output a list of available generators in cmake. Note which generator you would like to use. Here we will use "Visual Studio 16 2019".
 
 ```CMD
 cmake --help
 ```
 
-4. Generate `cmakebuild` files for desired generator. The `-G` flag specifies which generator to use. `-S` specifies where the top level CMakeLists.txt file is located (should be in current directory). `-B` specifed where to put the generator files, and `-A` specifies the architecture of the output (32-bit is necessary here for compatibility with the ADS binaries).
+3. Generate `cmakebuild` files for desired generator. The `-G` flag specifies which generator to use, `-S` specifies where the top level CMakeLists.txt file is located (should be in current directory), `-B` specifes where to put the generator files, and `-A` specifies the architecture of the output (32-bit is necessary here for compatibility with the ADS binaries).
 NOTE: This could take a few minutes to complete.
 ```CMD
 cmake -G "Visual Studio 16 2019" -S . -B ./cmakebuild -A win32
 ```
 
-5. Finally, build the executable
+4. Finally, build the executable
 ```CMD
 cmake --build ./cmakebuild --config Release --target server
 ```
 
-6. Once building is complete with no errors, the executable is located at:
+5. Once building is complete with no errors, the executable is located at:
 ```CMD
 .\cmakebuild\src\server\Release\server.exe
 ```

@@ -1,16 +1,15 @@
 # Test WebHMI
 
-## Install
+## Install npm dependencies
+
+1. If not installed, install [npm](https://nodejs.org/en/download/).
+
+2. Change Directory to where the the `package.json` is located and run the install command
 
 ```
+cd ./example/HMI/
 npm install
 ```
-
-## Run
-
-Open Index.html with your favorite server
-
-The live server extension for VSCode is recommended for development
 
 ## Change the connection settings
 
@@ -23,3 +22,12 @@ machine = new WEBHMI.Machine({
   maxReconnectCount: 5000,
 });
 ```
+
+## Run
+
+Open Index.html with your favorite server.
+
+The [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension for VSCode is recommended. Once installed, right click on `index.html` and select `Open with Live Server`.
+
+The client should display in a browser:
+![webHMI client](images/webHMI_local.JPG)

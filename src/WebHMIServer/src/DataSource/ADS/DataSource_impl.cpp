@@ -194,19 +194,21 @@ bool adsdatasrc_impl::encodeBuffer(string&       variable,
     if (datatype.valid == true) {
         //If this is a basic data type, then we can parse it with the given parser
         if (datatype.memberCount() == 0) {
-            if (datatype.flags_struct.DATATYPE) {
+            if (!dataType_member_base::encode(datatype.dataType, buffer, value, datatype.size)) {
                 return false;
-            } else {
-                if (!dataType_member_base::encode(datatype.dataType, buffer, value, datatype.size)) {
-                    return false;
-                }
             }
-        } else {
+        }
+        //If this has members, they should have been broken up into individual variables.
+        //  For shame..
+        else {
             return false;
         }
-    } else {
+    }
+    //The variable was not found
+    else {
         return false;
     }
+    //All is well
     return true;
 }
 
@@ -255,7 +257,7 @@ void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
     symbol.flags = info.flags;
     symbol.flags_struct = datatype_flags_struct(info.flags, false);
     symbol.isArray = info.arrayDim > 0;
-    symbol.valid = !info.flags_struct.TCCOMIFACEPTR && !info.flags_struct.REFERENCETO && !info.flags_struct.DATATYPE;
+    symbol.valid = !info.flags_struct.TCCOMIFACEPTR && !info.flags_struct.REFERENCETO;
 }
 
 void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
@@ -273,7 +275,7 @@ void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
     symbol.flags = info.flags;
     symbol.flags_struct = datatype_flags_struct(info.flags, true);
     symbol.isArray = info.arrayDim > 0;
-    symbol.valid = !info.flags_struct.TCCOMIFACEPTR && !info.flags_struct.REFERENCETO && !info.flags_struct.DATATYPE;
+    symbol.valid = !info.flags_struct.TCCOMIFACEPTR && !info.flags_struct.REFERENCETO;
 }
 
 PAdsSymbolEntry adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
@@ -292,7 +294,6 @@ PAdsSymbolEntry adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
     symbol.flags = pAdsSymbolEntry->flags;
     symbol.flags_struct = datatype_flags_struct(pAdsSymbolEntry->flags, true);
     // symbol.isArray = pAdsSymbolEntry-> > 0;
-    symbol.valid = !symbol.flags_struct.TCCOMIFACEPTR && !symbol.flags_struct.REFERENCETO &&
-                   !symbol.flags_struct.DATATYPE;
+    symbol.valid = !symbol.flags_struct.TCCOMIFACEPTR && !symbol.flags_struct.REFERENCETO;
     return pAdsSymbolEntry;
 }

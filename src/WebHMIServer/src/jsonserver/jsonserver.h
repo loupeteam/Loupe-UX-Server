@@ -9,6 +9,11 @@
 class jsonRequest {
 public:
     std::chrono::steady_clock::time_point receiveTime;
+    std::chrono::steady_clock::time_point pickedTime;
+    std::chrono::steady_clock::time_point sendRequestTime;
+    std::chrono::steady_clock::time_point finishRequestTime;
+    std::chrono::steady_clock::time_point sendResponseTime;
+    std::chrono::steady_clock::time_point finishResponseTime;
     std::string type;
     crow::websocket::connection* conn = nullptr;
     std::vector<std::string> keys;
@@ -21,6 +26,7 @@ public:
             receiveTime)
     {}
     jsonRequest(){}
+    void printTimes();
 };
 
 class plcrequest {
@@ -34,14 +40,21 @@ public:
 class jsonserver {
 private:
     void* app;
-    std::future<void> thread;
+    std::future<void> serverThreads;
+    std::vector<std::future<void> > responseThreads;
+    std::future<void> crowThreads;
     std::mutex mtx_connections;
     std::mutex mtx_send;
     std::unordered_set<void*> users;
     std::vector<DataSource*> dataSources;
+
+    std::deque<jsonRequest> pendingWriteRequests;
+
     std::mutex mtx_pendingReadRequests;
     std::deque<jsonRequest> pendingReadRequests;
-    std::deque<jsonRequest> pendingWriteRequests;
+
+    std::mutex mtx_pendingResponse;
+    std::deque<jsonRequest> pendingResponse;
 
     /* data */
 public:
@@ -49,15 +62,18 @@ public:
     ~jsonserver();
     int start(int port, bool async = true);
     int stop();
+
     int addDataSource(DataSource& ds);
     int readVariables(const std::vector<std::string>& keys);
     int handlePendingRequests();
+    int handlePendingResponses();
     int sendResponse(crow::websocket::connection* conn, const std::vector<std::string>& keys);
     void addPendingReadRequest(jsonRequest& req);
     bool getPendingReadRequest(jsonRequest* req);
     void addConnection(crow::websocket::connection& conn);
     void removeConnection(crow::websocket::connection& conn);
     void serverThread();
+    void responseThread();
     crow::json::wvalue getVariable(std::string);
 };
 

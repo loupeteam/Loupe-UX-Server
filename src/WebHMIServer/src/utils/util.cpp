@@ -53,21 +53,27 @@ std::chrono::high_resolution_clock::time_point getTimestamp()
     return std::chrono::high_resolution_clock::now();
 }
 
-//Measure the time elapased since timestamp
-double measureTime(std::string name, std::chrono::high_resolution_clock::time_point start)
+double printTime(std::string                                    name,
+                 std::chrono::high_resolution_clock::time_point start,
+                 std::chrono::high_resolution_clock::time_point end)
 {
-    auto finish = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     std::cout << name << elapsed.count() / 1000.0 << " ms\n" << std::flush;
     return elapsed.count() / 1000.0;
 }
 
+//Measure the time elapased since timestamp
+double measureTime(std::string name, std::chrono::high_resolution_clock::time_point start)
+{
+    auto end = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    return elapsed.count() / 1000.0;
+}
 
 // Return the contents of the file as a string
-std::string getFileContents(std::string fileName) {
+int getFileContents(std::string fileName, std::string& contents) {
     // Open the file for reading
     std::ifstream file(fileName);
-    std::string contents;
 
     if (file.is_open()) {
         std::stringstream buffer;
@@ -76,7 +82,8 @@ std::string getFileContents(std::string fileName) {
         contents = buffer.str();
     } else {
         std::cerr << "Failed to open the configuration file." << std::endl;
+        return -1;
     }
     
-    return contents;
+    return 0;
 }

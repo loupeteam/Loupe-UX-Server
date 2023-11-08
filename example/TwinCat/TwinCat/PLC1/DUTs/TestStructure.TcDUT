@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="TestStructure" Id="{7c5cc43c-dbdf-432a-9ca6-4a5a0873e6c3}">
+    <Declaration><![CDATA[TYPE TestStructure :
+STRUCT	
+	_bool: BOOL;
+	_BYTE: BYTE;
+	_DATE: DATE;
+	_DATE_AND_TIME: DATE_AND_TIME;
+	_DINT: DINT;
+	_DT: DT;
+	_DWORD: DWORD;
+	_INT: INT;
+	_LINT: LINT;
+	_LREAL: LREAL;
+	_LTIME: LTIME;
+	_LWORD: LWORD;
+	_REAL: REAL;
+	_SINT: SINT;
+	_STRING: STRING;
+	_TIME: TIME;
+	_TIME_OF_DAY: TIME_OF_DAY;
+	_TOD: TOD;
+	_UDINT: UDINT;
+	_UINT: UINT;
+	_ULINT: ULINT;	
+	_USINT: USINT;	
+	_WORD: WORD;	
+	_WSTRING: WSTRING;		
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

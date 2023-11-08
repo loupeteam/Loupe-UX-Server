@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="ITestInterface" Id="{4aac7a8b-7acd-4f78-bb7f-2e7b7d92b622}">
+    <Declaration><![CDATA[INTERFACE ITestInterface
+]]></Declaration>
+    <Property Name="TestPropGet" Id="{cd8c01f9-2124-40b2-8624-bdaf53925b6d}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY TestPropGet : BOOL]]></Declaration>
+      <Get Name="Get" Id="{ba9baa75-fa42-4749-bb85-39cf7f52ac08}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="TestPropGetSet" Id="{76b3add6-d494-4f25-b502-6712cf7bc3d5}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY TestPropGetSet : BOOL]]></Declaration>
+      <Get Name="Get" Id="{a348a5b3-f425-4cdb-b15a-9fafb74380fd}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{14c35473-1cc1-4dbe-92b9-8288dc437e77}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="TestPropNoMon" Id="{0dbaf2f7-d163-4a87-a6e8-0d94f177834d}">
+      <Declaration><![CDATA[PROPERTY TestPropNoMon : BOOL]]></Declaration>
+      <Get Name="Get" Id="{71e5b9f3-97f9-491d-a706-cc80f2bce991}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{d1b348f1-e820-4dd4-918c-54c2d06b8e46}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="TestPropSet" Id="{c0ea6f1a-aca9-4eb0-9b77-f380ea5d471a}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY TestPropSet : BOOL]]></Declaration>
+      <Set Name="Set" Id="{1a70c34d-78e0-40f0-a709-bd3f12757ffe}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

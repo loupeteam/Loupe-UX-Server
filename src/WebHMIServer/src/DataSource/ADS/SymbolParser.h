@@ -27,6 +27,7 @@ struct datatype_flags_struct {
     bool METHODINFOS;
     bool ATTRIBUTES;
     bool ENUMINFOS;
+    BYTE mask;
     datatype_flags_struct()
     {}
     datatype_flags_struct(ULONG flags, bool symbol);

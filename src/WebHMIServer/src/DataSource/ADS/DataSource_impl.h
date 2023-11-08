@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <map>
 typedef int BOOL;
 typedef unsigned long ULONG;
 typedef ULONG* PULONG;
@@ -20,7 +21,10 @@ class adsdatasrc_impl {
     void parseSymbols(void* pSymbols, unsigned int nSymSize);
     void parseDatatypes(void* pDatatypes, unsigned int nDTSize);
     bool supportType(ULONG flags);
+
 public:
+    bool readingProps = false;
+    std::vector<std::string> propertyReads;
     long readInfo();
     // void cacheDataTypes();
     bool cacheSymbolInfo(std::string symbolName);
@@ -41,8 +45,8 @@ public:
     crow::json::wvalue& findValue(std::string& symbolName);
     // dataType_member_base* getType(std::string& typeName);
 
-    void getMemberInfo(std::string targetSymbol, CAdsSymbolInfo Entry);
-    void getMemberInfo(std::string       targetSymbol,
+    bool getMemberInfo(std::string targetSymbol, CAdsSymbolInfo Entry);
+    bool getMemberInfo(std::string       targetSymbol,
                        PAdsDatatypeEntry Entry,
                        std::string       prefix,
                        unsigned long     group,

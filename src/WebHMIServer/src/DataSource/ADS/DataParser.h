@@ -35,6 +35,7 @@ class symbolMetadata {
 public:
     std::string name;
     bool valid = false;
+    bool cacheComplete = false;
     bool notFound = false;
     bool isArray = false;
     unsigned long group = 0;
@@ -43,7 +44,9 @@ public:
     unsigned long size = 0;
     unsigned long flags = 0;
     unsigned long dataType;
-
+    unsigned long handle = 0;
+    unsigned long readFail = 0;
+    unsigned long writeFail = 0;
     datatype_flags_struct flags_struct;
 
     std::string type;

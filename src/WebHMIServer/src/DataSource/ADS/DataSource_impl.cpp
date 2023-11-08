@@ -15,23 +15,25 @@ adsdatasrc_impl::~adsdatasrc_impl()
     }
 }
 
-void adsdatasrc_impl::getMemberInfo(std::string targetSymbol, CAdsSymbolInfo main)
+bool adsdatasrc_impl::getMemberInfo(string targetSymbol, CAdsSymbolInfo main)
 {
     if (!main.m_pEntry) {
         main.m_pEntry = parsedSymbols->GetTypeByName(main.type);
     }
 
     if (main.m_pEntry) {
-        getMemberInfo(targetSymbol, main.m_pEntry, main.fullname, main.iGrp, main.iOffs);
+        return getMemberInfo(targetSymbol, main.m_pEntry, main.fullname, main.iGrp, main.iOffs);
     }
+    return false;
 }
 
-void adsdatasrc_impl::getMemberInfo(std::string       targetSymbol,
+bool adsdatasrc_impl::getMemberInfo(string            targetSymbol,
                                     PAdsDatatypeEntry Entry,
                                     string            prefix,
                                     unsigned long     group,
                                     uint32_t          offset)
 {
+    bool cacheComplete = true;
     CAdsSymbolInfo info;
     for (size_t i = 0; i < parsedSymbols->SubSymbolCount(Entry); i++) {
         parsedSymbols->SubSymbolInfo(Entry, i, info);
@@ -49,10 +51,12 @@ void adsdatasrc_impl::getMemberInfo(std::string       targetSymbol,
         // This is so we don't cache large strcutres that are not needed
         if (targetSymbol.size() < info.fullname.size()) {
             if (targetSymbol.compare(0, targetSymbol.size(), info.fullname, 0, targetSymbol.size()) != 0) {
+                cacheComplete = false;
                 continue;
             }
         } else {
             if (info.fullname.compare(0, info.fullname.size(), targetSymbol, 0, info.fullname.size()) != 0) {
+                cacheComplete = false;
                 continue;
             }
         }
@@ -66,12 +70,22 @@ void adsdatasrc_impl::getMemberInfo(std::string       targetSymbol,
         if (SubEntry.subItems == 0) {
             info.m_pEntry = parsedSymbols->GetTypeByName(info.type);
             if (info.m_pEntry) {
-                getMemberInfo(targetSymbol, info.m_pEntry, info.fullname, group, offset + SubEntry.offs);
+                symbol.cacheComplete = getMemberInfo(targetSymbol,
+                                                     info.m_pEntry,
+                                                     info.fullname,
+                                                     group,
+                                                     offset + SubEntry.offs);
             }
         } else {
-            getMemberInfo(targetSymbol, &SubEntry, info.fullname, group, offset + SubEntry.offs);
+            symbol.cacheComplete = getMemberInfo(targetSymbol,
+                                                 &SubEntry,
+                                                 info.fullname,
+                                                 group,
+                                                 offset + SubEntry.offs);
         }
+        cacheComplete = cacheComplete && symbol.cacheComplete;
     }
+    return cacheComplete;
 }
 
 bool adsdatasrc_impl::supportType(ULONG flags)
@@ -111,7 +125,7 @@ long adsdatasrc_impl::readInfo()
     return nResult;
 }
 
-bool adsdatasrc_impl::cacheSymbolInfo(std::string symbolName)
+bool adsdatasrc_impl::cacheSymbolInfo(string symbolName)
 {
     CAdsSymbolInfo Entry;
     this->parsedSymbols->Symbol(symbolName, Entry);
@@ -120,7 +134,7 @@ bool adsdatasrc_impl::cacheSymbolInfo(std::string symbolName)
     }
     symbolMetadata& info = this->symbolInfo[Entry.name];
     populateSymbolInfo(info, Entry.fullname, Entry);
-    this->getMemberInfo(symbolName, Entry);
+    info.cacheComplete = this->getMemberInfo(symbolName, Entry);
     return true;
 }
 
@@ -133,16 +147,25 @@ void adsdatasrc_impl::parseBuffer(crow::json::wvalue& variable,
 
     //If this is a basic data type, then we can parse it with the given parser
     if (datatype.memberCount() == 0) {
-        if (datatype.flags_struct.PROPITEM) {
+        // Read failed means that we attempted to read it and go an error
+        //  This usually means that the variable is not available
+        if (datatype.readFail == true) {
             //Not Parsed
-            variable = "Property Item: " + datatype.type;
-        } else if (datatype.flags_struct.DATATYPE) {
+            variable.clear();
+        }
+        //If this is a property item, then we need to to get a handle to it
+        // before we can read it
+        else if ((datatype.flags_struct.PROPITEM == true) && (datatype.handle == 0)) {
             //Not Parsed
-            variable = "Datatype: " + datatype.type;
+            variable.clear();
+            //If we have not read this property yet, then we need to read it
+            this->propertyReads.push_back(datatype.name);
         } else {
             if (!dataType_member_base::parse(datatype.dataType, variable, buffer, size)) {
                 //Not Parsed
-                variable = "Not Parsed: " + datatype.type;
+                variable.clear();
+            } else {
+                //Parsed
             }
         }
     } else {
@@ -159,9 +182,9 @@ void adsdatasrc_impl::parseBuffer(crow::json::wvalue& variable,
     }
 }
 
-bool adsdatasrc_impl::encodeBuffer(std::string&  variable,
+bool adsdatasrc_impl::encodeBuffer(string&       variable,
                                    void*         pBuffer,
-                                   std::string&  value,
+                                   string&       value,
                                    unsigned long size)
 {
     BYTE* buffer = (BYTE*)pBuffer;
@@ -171,9 +194,7 @@ bool adsdatasrc_impl::encodeBuffer(std::string&  variable,
     if (datatype.valid == true) {
         //If this is a basic data type, then we can parse it with the given parser
         if (datatype.memberCount() == 0) {
-            if (datatype.flags_struct.PROPITEM) {
-                return false;
-            } else if (datatype.flags_struct.DATATYPE) {
+            if (datatype.flags_struct.DATATYPE) {
                 return false;
             } else {
                 if (!dataType_member_base::encode(datatype.dataType, buffer, value, datatype.size)) {
@@ -189,25 +210,25 @@ bool adsdatasrc_impl::encodeBuffer(std::string&  variable,
     return true;
 }
 
-symbolMetadata& adsdatasrc_impl::findInfo(std::string& symbolName)
+symbolMetadata& adsdatasrc_impl::findInfo(string& symbolName)
 {
     symbolMetadata& info = this->symbolInfo[symbolName];
-    if ((info.valid == false) && !info.notFound) {
+    if ((info.cacheComplete == false) && !info.notFound) {
         info.notFound = !cacheSymbolInfo(symbolName);
     }
     return info;
 }
 
-crow::json::wvalue& adsdatasrc_impl::findValue(std::string& symbolName)
+crow::json::wvalue& adsdatasrc_impl::findValue(string& symbolName)
 {
     crow::json::wvalue& ret = find(symbolName, this->symbolData);
     return ret;
 }
 
-crow::json::wvalue& adsdatasrc_impl::find(std::string symbolName, crow::json::wvalue& datasource)
+crow::json::wvalue& adsdatasrc_impl::find(string symbolName, crow::json::wvalue& datasource)
 {
     toLower(symbolName);
-    std::deque<std::string> path = splitVarName(symbolName, ".[");
+    deque<string> path = splitVarName(symbolName, ".[");
     crow::json::wvalue* ret = &datasource[path[0]];
     for ( size_t i = 1; i < path.size(); i++) {
         crow::json::wvalue* data;
@@ -218,7 +239,7 @@ crow::json::wvalue& adsdatasrc_impl::find(std::string symbolName, crow::json::wv
 }
 
 void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
-                                         std::string&    symbolName,
+                                         string&         symbolName,
                                          unsigned long   parentGroup,
                                          unsigned long   parentOffset,
                                          CAdsSymbolInfo& info)
@@ -238,7 +259,7 @@ void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
 }
 
 void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
-                                         std::string&    symbolName,
+                                         string&         symbolName,
                                          CAdsSymbolInfo& info)
 {
     symbol.name = symbolName;
@@ -256,7 +277,7 @@ void adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
 }
 
 PAdsSymbolEntry adsdatasrc_impl::populateSymbolInfo(symbolMetadata& symbol,
-                                                    std::string&    symbolName,
+                                                    string&         symbolName,
                                                     PAdsSymbolEntry pAdsSymbolEntry)
 {
     symbol.name = symbolName;

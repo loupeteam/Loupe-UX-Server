@@ -14,5 +14,9 @@ let writeStructure = function (tag, value) {
   machine.MAIN.MyFub.TestPropGetSet = 1;
   machine.MAIN.MyFub.TestPropGet = 1;
   machine.MAIN.MyFub.Incrementing = 1000;
+  machine.MAIN.MyFub._REAL_Array[0] = 0;
+  machine.MAIN.MyFub._REAL_Array[1] = 1;
+  machine.MAIN.MyFub._REAL_Array[2] = 2;
+  machine.MAIN.MyFub._REAL_Array[3] = 3;
   machine.writeVariable('MAIN.MyFub')
 }

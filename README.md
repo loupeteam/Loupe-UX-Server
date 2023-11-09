@@ -68,3 +68,29 @@ cmake --build ./cmakebuild --config Release --target server
 .\cmakebuild\src\server\Release\server.exe
 ```
 If everything has been set up correctly, your webHMI client should now be able to interface with your Beckhoff TwinCat PLC.
+
+### Running the Example project
+
+The repo includes an example webHMI client and a TwinCat PLC project that can be used to test the server
+
+#### Get PLC running
+
+1. Open the TwinCAT 3 project, located in `<repo>/example/TwinCat/`
+
+2. Set Target System to `Local` and Activate Configuration.
+
+#### Get the WebHMIServer running
+
+1. Work through the steps in the Getting Started section of this README.
+
+2. Adapt the `configuration.json` file to point to the PLC (if running locally, netID should be `127.0.0.1.1.1`)
+
+3. Upon running `server.exe`, you should see evidence that connection has occurred. If not, check that the TwinCAT PLC is running locally.
+
+#### Get webHMI client running
+
+Follow the instructions in the README file in `<repo>/example/HMI/`
+
+
+#### Final state
+If everything has been set up correctly, the webHMI client will be able to read and write variables located on the TwinCAT PLC.

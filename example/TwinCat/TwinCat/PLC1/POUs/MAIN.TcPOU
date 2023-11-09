@@ -9,7 +9,8 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[MyFub._INTERFACE := MyFubI;]]></ST>
+      <ST><![CDATA[MyFub._INTERFACE := MyFubI;
+MyFub.Incrementing	:= MyFub.Incrementing + 1;]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

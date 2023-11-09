@@ -16,24 +16,23 @@ int main(int argc, char const* argv[])
     crow::json::rvalue cfg;
     if (getFileContents("configuration.json", configurationJsonString) == 0) {
         cfg = crow::json::load(configurationJsonString);
-    }
-    else {
+    } else {
         cerr << "Could not open server configuration file";
         return -1;
     }
 
-    if (cfg["serverType"].s() == "ADS") {
-        adsdatasrc dataSource;
-        dataSource.setPlcCommunicationParameters(cfg["adsParameters"]["netID"].s(), cfg["adsParameters"]["port"].i());
-        dataSource.readPlcData();
+    jsonserver server;
 
-        jsonserver server;
+    if (cfg["serverType"].s() == "ADS") {
+        adsdatasrc* dataSource = new adsdatasrc();
+        dataSource->setPlcCommunicationParameters(cfg["adsParameters"]["netID"].s(), cfg["adsParameters"]["port"].i());
+        dataSource->readPlcData();
         server.addDataSource(dataSource);
-        server.start(8000, false);
-    }
-    else {
+    } else {
         cerr << "Unsupported server type";
     }
+
+    server.start(8000, false);
 
     return 0;
 }

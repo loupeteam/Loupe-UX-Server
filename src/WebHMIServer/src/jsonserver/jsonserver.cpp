@@ -138,9 +138,9 @@ void jsonserver::responseThread()
     }
 }
 
-int jsonserver::addDataSource(DataSource& ds)
+int jsonserver::addDataSource(DataSource* ds)
 {
-    this->dataSources.push_back(&ds);
+    this->dataSources.push_back(ds);
     return 0;
 }
 

@@ -63,7 +63,7 @@ public:
     int start(int port, bool async = true);
     int stop();
 
-    int addDataSource(DataSource& ds);
+    int addDataSource(DataSource* ds);
     int readVariables(const std::vector<std::string>& keys);
     int handlePendingRequests();
     int handlePendingResponses();

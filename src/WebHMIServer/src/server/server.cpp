@@ -30,6 +30,7 @@ int main(int argc, char const* argv[])
         server.addDataSource(dataSource);
     } else {
         cerr << "Unsupported server type";
+        return 0;
     }
 
     server.start(8000, false);

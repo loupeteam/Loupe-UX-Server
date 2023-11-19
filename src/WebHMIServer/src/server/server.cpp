@@ -24,10 +24,16 @@ int main(int argc, char const* argv[])
     jsonserver server;
 
     if (cfg["serverType"].s() == "ADS") {
+        #ifdef _WIN32
         adsdatasrc* dataSource = new adsdatasrc();
         dataSource->setPlcCommunicationParameters(cfg["adsParameters"]["netID"].s(), cfg["adsParameters"]["port"].i());
         dataSource->readPlcData();
+
         server.addDataSource(dataSource);
+        #else
+            cerr << "ADS is not supported on this platform";
+            return 0;
+        #endif
     } else {
         cerr << "Unsupported server type";
         return 0;

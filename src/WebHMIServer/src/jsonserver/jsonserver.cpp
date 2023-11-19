@@ -150,7 +150,7 @@ int jsonserver::readVariables(const std::vector<std::string>& keys)
     return 0;
 }
 
-void jsonserver::addPendingReadRequest(jsonRequest& req)
+void jsonserver::addPendingReadRequest(const jsonRequest& req)
 {
     mtx_pendingReadRequests.lock();
     pendingReadRequests.push_back(req);

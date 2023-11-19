@@ -68,7 +68,7 @@ public:
     int handlePendingRequests();
     int handlePendingResponses();
     int sendResponse(crow::websocket::connection* conn, const std::vector<std::string>& keys);
-    void addPendingReadRequest(jsonRequest& req);
+    void addPendingReadRequest(const jsonRequest& req);
     bool getPendingReadRequest(jsonRequest* req);
     void addConnection(crow::websocket::connection& conn);
     void removeConnection(crow::websocket::connection& conn);

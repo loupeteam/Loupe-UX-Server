@@ -25,7 +25,7 @@ bool dataType_member_base::encode(unsigned long type, BYTE* buffer, std::string&
 
     case 0x11:     // UINT8
         *reinterpret_cast<uint8_t*>(buffer) = (uint8_t)std::stoi(value);
-        break;            
+        break;
 
     case 0x12:     // WORD, UINT
         *reinterpret_cast<uint16_t*>(buffer) = std::stoi(value);
@@ -54,7 +54,7 @@ bool dataType_member_base::encode(unsigned long type, BYTE* buffer, std::string&
     case 0x1F:     // WSTRING
         if (size > 0) {
             // Convert from a wstring to a string.
-            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
             std::wstring wvalue = converter.from_bytes(value);
             memcpy(buffer, wvalue.c_str(), size);
             return true;
@@ -149,8 +149,8 @@ bool dataType_member_base::parse(unsigned long type, crow::json::wvalue& variabl
     case 0x1F:     // WSTRING
         if (size > 0) {
             // Convert from a wstring to a string.
-            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-            variable = converter.to_bytes((wchar_t *)buffer);
+            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
+            variable = converter.to_bytes((wchar_t*)buffer);
             return true;
         }
         break;

@@ -1,14 +1,14 @@
-# WebHMI Json Server
+# Loupe UX Json Server
 
 ## Overview
 
-This WebHMI Json server processes read and write requests from webHMI clients* and processes the requests with a PLC. In other words, it acts as a middleman or gateway, translating the highlevel JSON requests into platform-specific data access.
+This Loupe UX Json server processes read and write requests from Lux clients* and processes the requests with a PLC. In other words, it acts as a middleman or gateway, translating the highlevel JSON requests into platform-specific data access.
 
 At the present time, this server is capable of connection to Beckhoff PLCs, using TwinCAT 3's built-in [ADS server](https://www.beckhoff.com/en-us/products/automation/twincat/tc1xxx-twincat-3-base/tc1000.html). In the future, additional connection types may be added.
 
 
 
-\* for more information on creating a webHMI client for user interfaces, see [here](https://loupeteam.github.io/LoupeDocs/libraries/webhmi.html).
+\* for more information on creating a Lux client for user interfaces, see [here](https://loupeteam.github.io/LoupeDocs/libraries/Loupe-UX.html).
 
 
 ## Getting Started
@@ -19,7 +19,7 @@ At the present time, this server is capable of connection to Beckhoff PLCs, usin
 #### Necessary Installs
 
 * Twincat 3
-    - The ADS binaries that this WebHMI Json server uses should be found to be located at `C:\TwinCAT\AdsApi\TcAdsDll`
+    - The ADS binaries that this Loupe UX Json server uses should be found to be located at `C:\TwinCAT\AdsApi\TcAdsDll`
 
 * [CMake](https://cmake.org/download/) >= V3.27.1
     - Overview: CMake is a system for building C++ projects through whichever compiler you wish.
@@ -34,7 +34,7 @@ At the present time, this server is capable of connection to Beckhoff PLCs, usin
 1. Change directory to the following folder within the repo
 
 ```CMD
-cd <path_to_repo>/src/WebHMIServer
+cd <path_to_repo>/src/LuxServer
 ```
 
 2. Optionally, you can output a list of available generators in cmake. Note which generator you would like to use. Here we will use "Visual Studio 16 2019".
@@ -61,17 +61,17 @@ cmake --build ./cmakebuild --config Release --target server
 
 #### Configuring and Running the Server
 
-1. Open `configuration.json`. It should be located in the current working directory (`<path_to_repo>/src/WebHMIServer/`)
+1. Open `configuration.json`. It should be located in the current working directory (`<path_to_repo>/src/LuxServer/`)
 2. Modify the JSON contents as necessary, setting netID of your PLC and ADS Port number. NOTE: By default, the Twincat ADS server will listen on port 851.
 3. Run the the server with:
 ```CMD
 .\cmakebuild\src\server\Release\server.exe
 ```
-If everything has been set up correctly, your webHMI client should now be able to interface with your Beckhoff TwinCat PLC.
+If everything has been set up correctly, your Lux client should now be able to interface with your Beckhoff TwinCat PLC.
 
 ### Running the Example project
 
-The repo includes an example webHMI client and a TwinCat PLC project that can be used to test the server
+The repo includes an example Lux client and a TwinCat PLC project that can be used to test the server
 
 #### Get PLC running
 
@@ -79,7 +79,7 @@ The repo includes an example webHMI client and a TwinCat PLC project that can be
 
 2. Set Target System to `Local` and Activate Configuration.
 
-#### Get the WebHMIServer running
+#### Get the Loupe UX Server running
 
 1. Work through the steps in the Getting Started section of this README.
 
@@ -87,10 +87,10 @@ The repo includes an example webHMI client and a TwinCat PLC project that can be
 
 3. Upon running `server.exe`, you should see evidence that connection has occurred. If not, check that the TwinCAT PLC is running locally.
 
-#### Get webHMI client running
+#### Get Lux client running
 
 Follow the instructions in the README file in `<repo>/example/HMI/`
 
 
 #### Final state
-If everything has been set up correctly, the webHMI client will be able to read and write variables located on the TwinCAT PLC.
+If everything has been set up correctly, the Lux client will be able to read and write variables located on the TwinCAT PLC.

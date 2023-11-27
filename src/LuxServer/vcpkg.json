@@ -1,5 +1,5 @@
 {
-    "name": "webhmiserver",
+    "name": "luxserver",
     "version-string": "master",
     "dependencies": [
         "asio",

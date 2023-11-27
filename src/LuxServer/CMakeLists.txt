@@ -20,7 +20,7 @@ IF(APPLE)
 ENDIF(APPLE)
 
 
-project(webhmiserver)
+project(luxserver)
 
 add_subdirectory(src)
 

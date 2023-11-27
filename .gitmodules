@@ -1,3 +1,3 @@
-[submodule "src/WebHMIServer/vcpkg"]
-	path = src/WebHMIServer/vcpkg
+[submodule "src/LuxServer/vcpkg"]
+	path = src/LuxServer/vcpkg
 	url = https://github.com/microsoft/vcpkg.git

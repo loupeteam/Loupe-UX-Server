@@ -27,7 +27,13 @@ machine = new LUX.Machine({
 
 Open Index.html with your favorite server.
 
-The [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension for VSCode is recommended. Once installed, right click on `index.html` and select `Open with Live Server`.
+Option 1: Run the following command to start a local server
+
+```
+npm start
+```
+
+Option 2: The [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension for VSCode is recommended. Once installed, right click on `index.html` and select `Open with Live Server`.
 
 The client should display in a browser:
 ![Lux client](images/lux_local.JPG)

@@ -22,6 +22,8 @@ jobs:
           ls ${{ github.workspace }}
       - name: CMake Generators List
         run: cmake --help
+      - name: Check Path
+        run: echo %PATH%
       - name: Change directory to the source folder within the repo
         run: ${{ github.workspace }}\scr\LuxServer\cmake -G "Visual Studio 16 2019" -S . -B ./cmakebuild -A win32
       - run: echo "🍏 This job's status is ${{ job.status }}."

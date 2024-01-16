@@ -23,5 +23,5 @@ jobs:
       - name: CMake Generators List
         run: cmake --help
       - name: Change directory to the source folder within the repo
-        run: ${{ github.workspace }}/scr/LuxServer
+        run: ${{ github.workspace }}\scr\LuxServer
       - run: echo "🍏 This job's status is ${{ job.status }}."

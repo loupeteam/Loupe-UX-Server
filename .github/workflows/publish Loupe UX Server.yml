@@ -22,6 +22,8 @@ jobs:
           ls ${{ github.workspace }}
       - name: CMake Generators List
         run: cmake --help
+      - name: Add CMake to path
+        run: set PATH=%PATH%;C:\Program Files\CMake\bin
       - name: Check Path
         run: echo %PATH%
       - name: Change directory to the source folder within the repo

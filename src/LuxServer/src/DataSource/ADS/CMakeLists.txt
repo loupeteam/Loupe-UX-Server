@@ -7,12 +7,12 @@ add_library( adsdatasrc ${path_SRC} )
 target_include_directories(adsdatasrc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 #include the ADS API
-target_include_directories(adsdatasrc PUBLIC .\\dependencies\\Include)
+target_include_directories(adsdatasrc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/Include)
 
 #include the global include directory for all targets
 target_include_directories(adsdatasrc PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-target_link_libraries(adsdatasrc PUBLIC .\\dependencies\\TcAdsDll.lib)
+target_link_libraries(adsdatasrc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/TcAdsDll.lib)
 
 #find and link to asio
 find_package(asio CONFIG)

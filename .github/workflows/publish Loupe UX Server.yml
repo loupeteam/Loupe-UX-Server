@@ -32,4 +32,5 @@ jobs:
         shell: bash
         working-directory: ${{github.workspace}}/src/LuxServer
         run: cmake $GITHUB_WORKSPACE -G "Visual Studio 16 2019" -S . -B ./cmakebuild -A win32
+        run: cmake $GITHUB_WORKSPACE --build ./cmakebuild --config Release --target server
       - run: echo "🍏 This job's status is ${{ job.status }}."

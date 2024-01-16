@@ -6,7 +6,7 @@ on:
       - '*'
 jobs:
   Publish-Loupe-UX-Server:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
       - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v1.14

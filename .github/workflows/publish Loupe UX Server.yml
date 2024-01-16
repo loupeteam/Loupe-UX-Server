@@ -5,7 +5,7 @@ on:
     tags: 
       - '*'
 jobs:
-  Explore-GitHub-Actions:
+  Publish-Loupe-UX-Server:
     runs-on: windows-latest
     steps:
       - name: Check out repository code
@@ -22,4 +22,6 @@ jobs:
           ls ${{ github.workspace }}
       - name: CMake Generators List
         run: cmake --help
+      - name: Change directory to the source folder within the repo
+        run: ${{ github.workspace }}/scr/LuxServer
       - run: echo "🍏 This job's status is ${{ job.status }}."

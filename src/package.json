@@ -1,0 +1,19 @@
+{
+  "name": "@loupeteam/loupe-ux-server",
+  "version": "0.0.1",
+  "description": "The Loupe UX server will provide communication between a PLC and your LUX HMI on a windows computer",
+  "main": "server.exe",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/loupeteam/Loupe-UX-Server.git"
+  },
+  "author": "jcjakeway",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/loupeteam/Loupe-UX-Server/issues"
+  },
+  "homepage": "https://github.com/loupeteam/Loupe-UX-Server#readme",
+  "dependencies": {},
+  "devDependencies": {}
+}

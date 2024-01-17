@@ -4,6 +4,7 @@ on:
   push:
     tags: 
       - '*'
+  workflow_dispatch:
 jobs:
   Build-Loupe-UX-Server:
     runs-on: windows-2019
@@ -35,10 +36,10 @@ jobs:
       - name: Build Executable
         run: cmake --build ./src/LuxServer/cmakebuild --config Release --target server
       - run: echo "🍏 The build's status is ${{ job.status }}."
-  Publish-Loupe-UX-Server:
-    needs: Build-Loupe-UX-Server
-    runs-on: windows-latest
-    steps:
+#  Publish-Loupe-UX-Server:
+#    needs: Build-Loupe-UX-Server
+#    runs-on: windows-latest
+#    steps:
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

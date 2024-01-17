@@ -36,10 +36,6 @@ jobs:
       - name: Build Executable
         run: cmake --build ./src/LuxServer/cmakebuild --config Release --target server
       - run: echo "🍏 The build's status is ${{ job.status }}."
-#  Publish-Loupe-UX-Server:
-#    needs: Build-Loupe-UX-Server
-#    runs-on: windows-latest
-#    steps:
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -60,4 +56,4 @@ jobs:
           asset_path: ${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release\server.exe
           asset_name: server.exe
           asset_content_type: application/vnd.microsoft.portable-executable
-      - run: echo "🎉 The build's status is ${{ job.status }}."
+      - run: echo "🎉 The release's status is ${{ job.status }}."

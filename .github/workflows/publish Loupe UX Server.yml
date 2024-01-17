@@ -35,25 +35,25 @@ jobs:
       - name: Build Executable
         run: cmake --build ./src/LuxServer/cmakebuild --config Release --target server
       - run: echo "🍏 The build's status is ${{ job.status }}."
-    Publish-Loupe-UX-Server:
-      needs: Build-Loupe-UX-Server
-      runs-on: windows-latest
-      strategy:
-        matrix:
-          packages: [src\LuxServer\cmakebuild\src\server\Release]
-      permissions:
-        contents: read
-        packages: write
-      steps:
-        - uses: actions/checkout@v3
-        - uses: actions/setup-node@v3
-          with:
-            node-version: 18
-            registry-url: https://npm.pkg.github.com/
-        - uses: JS-DevTools/npm-publish@v2
-          id: publish
-          with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-            registry: "https://npm.pkg.github.com"
-            package: ${{ matrix.packages }}
-        - run: echo "🎉 The publish's status is ${{ job.status }}."
+  Publish-Loupe-UX-Server:
+    needs: Build-Loupe-UX-Server
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        packages: [src\LuxServer\cmakebuild\src\server\Release]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: https://npm.pkg.github.com/
+      - uses: JS-DevTools/npm-publish@v2
+        id: publish
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          registry: "https://npm.pkg.github.com"
+          package: ${{ matrix.packages }}
+      - run: echo "🎉 The publish's status is ${{ job.status }}."

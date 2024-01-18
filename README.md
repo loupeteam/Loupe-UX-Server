@@ -94,3 +94,9 @@ Follow the instructions in the README file in `<repo>/example/HMI/`
 
 #### Final state
 If everything has been set up correctly, the Lux client will be able to read and write variables located on the TwinCAT PLC.
+
+
+### How to trigger a automatic release through GitHUB
+Tagging any branch and pushing that tag to the origin will trigger a release.  The release will have the name 'Release ' + what ever text is in your tag name.  Example:  If you push a tag with the name 'v0.0.1' the release's name will be 'Release v0.0.1'.
+
+A release will include a .zip file named 'luxserver.zip' with the executable for the server and configuration.json file. The source code for Linux and Windows are also included.

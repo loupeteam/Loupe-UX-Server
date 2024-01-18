@@ -39,6 +39,9 @@ jobs:
       - name: Copy File
         run: |
             Copy-Item -Path ${{ github.workspace }}\src\LuxServer\configuration.json -Destination ${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release\
+      - name: Compress Folder
+        run: |
+            Compress-Archive -Path ${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release -${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release luxserver.zip
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

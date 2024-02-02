@@ -4,7 +4,7 @@
 #include <codecvt>
 #include <string>
 #include <vector>
-#include "crow_all.h"
+#include "../datasrc.h"
 #include "SymbolParser.h"
 #include "util.h"
 
@@ -31,7 +31,7 @@ public:
 };
 
 class symbolMetadata {
-    std::unordered_map<std::string, symbolMetadata> _members;
+    std::unordered_map<std::string, std::shared_ptr<symbolMetadata>> _members;
 public:
     std::string name;
     bool valid = false;
@@ -57,7 +57,7 @@ public:
     //Member count
     size_t memberCount() { return _members.size(); }
     //Get the members
-    std::unordered_map<std::string, symbolMetadata>& members() { return _members; }
+    std::unordered_map<std::string, std::shared_ptr<symbolMetadata>>& members() { return _members; }
 
     //Override the [] operator to return a reference to the member
     symbolMetadata& operator[](const std::string& key)
@@ -65,21 +65,35 @@ public:
         //Split the path into a deque
         std::deque<std::string> path = splitVarName(key, std::string(".["));
         if (path.size() == 1) {
-            return _members[key];
+            auto check = _members[key];
+            if(check == nullptr)
+                check = _members[key] = std::make_shared<symbolMetadata>();
+            return *check;
         } else {
             std::string member = path.front();
             path.pop_front();
-            return _members[member][path];
+            auto check = _members[member];
+            if(check == nullptr)
+                check = _members[member] = std::make_shared<symbolMetadata>();            
+            return (*check)[path];
         }
     }
     symbolMetadata& operator[](std::deque<std::string> path)
     {
         std::string key = path.front();
         if (path.size() == 1) {
-            return _members[path[0]];
+            
+            auto check = _members[path[0]];
+            if(check == nullptr)
+                check = _members[path[0]] = std::make_shared<symbolMetadata>();
+
+            return *check;
         } else {
             path.pop_front();
-            return _members[key][path];
+            auto check = _members[key];
+            if(check == nullptr)
+                check = _members[key] = std::make_shared<symbolMetadata>();                
+            return (*check)[path];
         }
     }
 };

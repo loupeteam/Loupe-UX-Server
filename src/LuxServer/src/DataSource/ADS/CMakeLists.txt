@@ -3,17 +3,23 @@ file(GLOB path_SRC "*.cpp" )
 #add the library
 add_library( adsdatasrc ${path_SRC} )
 
+target_link_libraries(adsdatasrc PUBLIC util)
+
 #include the local files
 target_include_directories(adsdatasrc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-#include the ADS API
-target_include_directories(adsdatasrc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/Include)
-
 #include the global include directory for all targets
 target_include_directories(adsdatasrc PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(adsdatasrc PUBLIC ${CMAKE_SOURCE_DIR}/depends/Crow/include)
 
-target_link_libraries(adsdatasrc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/TcAdsDll.lib)
+#if windows use the windows library
+if(WIN32)
+    target_include_directories(adsdatasrc PUBLIC ${CMAKE_SOURCE_DIR}/depends/ADS/AdsLib)
+    target_link_libraries(adsdatasrc PUBLIC debug ${CMAKE_SOURCE_DIR}/lib/debug/ads.lib)
+    target_link_libraries(adsdatasrc PUBLIC optimized ${CMAKE_SOURCE_DIR}/lib/release/ads.lib)
+endif(WIN32)
 
-#find and link to asio
-find_package(asio CONFIG)
-target_link_libraries(adsdatasrc PRIVATE asio::asio)
+#if linux use the linux library
+if(UNIX)
+    target_link_libraries(adsdatasrc PUBLIC libAdsLib.a)
+endif(UNIX)

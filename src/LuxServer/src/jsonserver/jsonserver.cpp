@@ -1,5 +1,4 @@
 #include "jsonserver.h"
-#include "crow_all.h"
 #include "util.h"
 
 jsonserver::jsonserver() {}
@@ -146,7 +145,19 @@ int jsonserver::addDataSource(DataSource* ds)
 
 int jsonserver::readVariables(const std::vector<std::string>& keys)
 {
-    this->dataSources.at(0)->readSymbolValue(keys);
+    //measure the time it takes to read the variables
+    {
+        auto start = getTimestamp();
+        this->dataSources.at(0)->readSymbolValue(keys);
+        auto end = getTimestamp();
+        std::cout << "Time to read variables 1: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;    
+    }
+    {
+        auto start = getTimestamp();
+        this->dataSources.at(0)->readSymbolValueDirect(keys[0]);
+        auto end = getTimestamp();
+        std::cout << "Time to read variables 2: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;    
+    }
     return 0;
 }
 
@@ -249,7 +260,7 @@ int jsonserver::handlePendingRequests()
 
         //Send the request to the PLC
         this->readVariables(keys);
-
+        
         mtx_pendingResponse.lock();
         for ( auto& kv : currentRequest) {
             kv.second.finishRequestTime = getTimestamp();
@@ -311,10 +322,10 @@ void jsonRequest::printTimes()
 {
     //Print the delta times
     std::cout << "\n Delta times:" << std::endl;
-    printTime("Time waiting for request pick : ", receiveTime, pickedTime);
-    printTime("Time to Generate Variables    : ", pickedTime, sendRequestTime);
+    // printTime("Time waiting for request pick : ", receiveTime, pickedTime);
+    // printTime("Time to Generate Variables    : ", pickedTime, sendRequestTime);
     printTime("Time to talk to PLC           : ", sendRequestTime, finishRequestTime);
-    printTime("Time waiting for response pick: ", finishRequestTime, sendResponseTime);
-    printTime("Time to respond               : ", sendResponseTime, finishResponseTime);
-    printTime("Total response time:          : ", receiveTime, finishResponseTime);
+    // printTime("Time waiting for response pick: ", finishRequestTime, sendResponseTime);
+    // printTime("Time to respond               : ", sendResponseTime, finishResponseTime);
+    // printTime("Total response time:          : ", receiveTime, finishResponseTime);
 }

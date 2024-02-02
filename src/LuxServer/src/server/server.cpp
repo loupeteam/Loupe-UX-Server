@@ -1,5 +1,5 @@
 #include "server.h"
-#include "crow_all.h"
+#include "crow.h"
 #include "jsonserver.h"
 #include "util.h"
 
@@ -26,7 +26,8 @@ int main(int argc, char const* argv[])
     if (cfg["serverType"].s() == "ADS") {
 #ifdef _WIN32
         adsdatasrc* dataSource = new adsdatasrc();
-        dataSource->setPlcCommunicationParameters(cfg["adsParameters"]["netID"].s(), cfg["adsParameters"]["port"].i());
+        dataSource->setLocalAms(cfg["adsParameters"]["localAmsNetId"].s());
+        dataSource->setPlcCommunicationParameters(cfg["adsParameters"]["ipV4Address"].s(), cfg["adsParameters"]["netID"].s(), cfg["adsParameters"]["port"].i());
         dataSource->readPlcData();
 
         server.addDataSource(dataSource);

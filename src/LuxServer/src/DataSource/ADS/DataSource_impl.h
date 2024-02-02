@@ -4,13 +4,15 @@
 #include <memory>
 #include <string>
 #include <map>
-typedef int BOOL;
-typedef unsigned long ULONG;
-typedef ULONG* PULONG;
 
-#include <TcAdsDef.h>
-#include <TcAdsAPI.h>
-#include "crow_all.h"
+#ifdef WIN32
+#include <AdsLib.h>
+#include "AdsVariable.h"
+#else
+#include <ads/AdsLib.h>
+#include <ads/AdsVariable.h>
+#endif
+#include <AdsDef.h>
 
 #include "SymbolParser.h"
 #include "DataParser.h"
@@ -34,6 +36,7 @@ public:
     adsdatasrc_impl(){}
     ~adsdatasrc_impl();
     long nErr, nPort;
+    std::unique_ptr<AdsDevice> route = nullptr;
     AmsAddr Addr;
     AmsAddr* pAddr = &Addr;
 

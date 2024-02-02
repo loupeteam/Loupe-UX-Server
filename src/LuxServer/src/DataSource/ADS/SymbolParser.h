@@ -9,8 +9,13 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <TcAdsDef.h>
-#include <TcAdsAPI.h>
+#ifdef WIN32
+#include <AdsLib.h>
+#else
+#include <ads/AdsLib.h>
+#endif
+#include <AdsDef.h>
+
 
 struct datatype_flags_struct {
     bool DATATYPE;

@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 //#include "stdafx.h"
-#include <format>
+//#include <format>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -188,7 +188,7 @@ BOOL CAdsParseSymbols::Symbol(std::string name, CAdsSymbolInfo& info)
     while (pEntry = Symbol(i++)) {
         std::string symbolName = PADSSYMBOLNAME(pEntry);
         toLower(symbolName);
-        if (name._Starts_with(symbolName)) {
+        if (name.rfind(symbolName, 0) == 0) {
             break;
         }
     }

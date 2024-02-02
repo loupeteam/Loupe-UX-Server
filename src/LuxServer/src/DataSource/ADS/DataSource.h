@@ -17,10 +17,13 @@ public:
     adsdatasrc(/* args */);
     ~adsdatasrc();
 
-    void setPlcCommunicationParameters(std::string netID, uint16_t port);
+    void setLocalAms(std::string netId);
+
+    void setPlcCommunicationParameters(std::string IpV4,std::string netID, uint16_t port);
 
     void readSymbolValue(std::string symbolName);
     void readSymbolValue(std::vector<std::string> symbolNames);
+    void readSymbolValueDirect(std::string symbolName);
 
     void getSymbolHandle(std::string symbolName);
     void getSymbolHandle(std::vector<std::string> symbolNames);

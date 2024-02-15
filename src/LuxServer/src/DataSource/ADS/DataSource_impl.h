@@ -69,9 +69,9 @@ public:
 };
 
 struct dataPar {
-    unsigned long indexGroup;   // index group in ADS server interface
-    unsigned long indexOffset;      // index offset in ADS server interface
-    unsigned long length;       // count of bytes to read
+    uint32_t indexGroup;   // index group in ADS server interface
+    uint32_t indexOffset;      // index offset in ADS server interface
+    uint32_t length;       // count of bytes to read
 };
 
 #endif // ADSDATASRC_IMPL_H

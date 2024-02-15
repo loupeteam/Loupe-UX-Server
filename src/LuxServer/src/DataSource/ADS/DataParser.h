@@ -38,15 +38,15 @@ public:
     bool cacheComplete = false;
     bool notFound = false;
     bool isArray = false;
-    unsigned long group = 0;
-    unsigned long gOffset = 0;
-    unsigned long offset = 0;
-    unsigned long size = 0;
-    unsigned long flags = 0;
-    unsigned long dataType;
-    unsigned long handle = 0;
-    unsigned long readFail = 0;
-    unsigned long writeFail = 0;
+    uint32_t group = 0;
+    uint32_t gOffset = 0;
+    uint32_t offset = 0;
+    uint32_t size = 0;
+    uint32_t flags = 0;
+    uint32_t dataType;
+    uint32_t handle = 0;
+    uint32_t readFail = 0;
+    uint32_t writeFail = 0;
     datatype_flags_struct flags_struct;
 
     std::string type;

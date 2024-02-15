@@ -1,15 +1,19 @@
 file(GLOB path_SRC "*.cpp" )
 
-#find and link to asio
-find_package(asio CONFIG)
-
 #add the library
 add_executable(server ${path_SRC} )
 
 #include the local files
 target_include_directories(server PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(server PRIVATE asio::asio)
+#find and link to asio
+if(WIN32)
+    find_package(asio CONFIG)
+endif()
+
+if(WIN32)
+    target_link_libraries(server PRIVATE asio::asio)
+endif()
 target_link_libraries(server PUBLIC jsonserver)
 target_link_libraries(server PUBLIC adsdatasrc)
 target_link_libraries(server PUBLIC util)
@@ -20,8 +24,9 @@ add_executable(server_router example/server.cpp )
 #include the local files
 target_include_directories(server_router PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-#link to jsonserver
+if(WIN32)
+    target_link_libraries(server_router PRIVATE asio::asio)
+endif()
 target_link_libraries(server_router PUBLIC jsonserver)
 target_link_libraries(server_router PUBLIC adsdatasrc)
 target_link_libraries(server_router PUBLIC util)
-target_link_libraries(server_router PRIVATE asio::asio)

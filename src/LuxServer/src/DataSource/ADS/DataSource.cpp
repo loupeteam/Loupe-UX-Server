@@ -276,7 +276,7 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> reqSymbolNames)
         PBYTE pObjAdsErrRes = (BYTE*)buffer;          // point to ADS-err
         PBYTE pdata = pObjAdsRes;
         for (auto symbolName : symbolNames) {
-            long result = *(long*)pObjAdsErrRes;
+            uint32_t result = *(uint32_t*)pObjAdsErrRes;
             pObjAdsErrRes += 4;
             symbolMetadata& info = impl->findInfo(symbolName);
             crow::json::wvalue& var = impl->findValue(symbolName);
@@ -366,22 +366,22 @@ void adsdatasrc::writeSymbolValue(crow::json::rvalue packet)
         }
     }
 
-    PBYTE mAdsSumBufferRes = new BYTE[reqNum * sizeof(long)];
+    PBYTE mAdsSumBufferRes = new BYTE[reqNum * 4];
     uint32_t bytesRead;
     // Read a variable from ADS
     long nResult = impl->route->ReadWriteReqEx2(
         ADSIGRP_SUMUP_WRITE, // Sum-Command, response will contain ADS-error code for each ADS-Sub-command
         reqNum, // Number of ADS-Sub-commands
-        reqNum * sizeof(long), // we request additional "error"-flag(long) for each ADS-sub commands
+        reqNum * 4, // we request additional "error"-flag(long) for each ADS-sub commands
         mAdsSumBufferRes,          // pointer to buffer for ADS-data
         reqNum * sizeof(dataPar) + size,      // send x bytes (3 * long : IG, IO, Len) + data command
         buffer,   // pointer to buffer for ADS-commands
         &bytesRead);
     if (nResult == ADSERR_NOERR) {
-        long* pResult = (long*)mAdsSumBufferRes;
+        uint32_t* pResult = (uint32_t*)mAdsSumBufferRes;
         //Output the individual statuses
         for (auto symbolName : symbolNames) {
-            long result = *pResult;
+            uint32_t result = *pResult;
             pResult += 1;
             if (result != ADSERR_NOERR) {
                 cerr << "Error Writing: " << result << " " << symbolName.first << '\n';

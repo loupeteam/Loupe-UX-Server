@@ -12,20 +12,15 @@
 
 #ifndef WIN32
 	typedef char BYTE;
-	typedef unsigned long ULONG;
-	typedef unsigned short UINT16;
-	typedef unsigned int UINT;
-	typedef unsigned char UCHAR;
-	typedef unsigned char BOOL;
+	typedef uint32_t ULONG;
+	typedef uint16_t UINT16;
+	typedef uint32_t UINT;
+	typedef int32_t BOOL;
 	typedef char* PCHAR;
 	typedef BYTE* PBYTE;
 	typedef ULONG* PULONG;
-	typedef UINT16* PUINT16;
-	typedef UINT* PUINT;
-	typedef UCHAR* PUCHAR;
-	typedef BOOL* PBOOL;
 	typedef void * PVOID;
-	typedef unsigned short USHORT;
+	typedef uint16_t USHORT;
 	#define FALSE 0
 	#define TRUE 1
 #endif
@@ -45,8 +40,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // ADS data types
-typedef unsigned short			ADS_UINT16;
-typedef unsigned long			ADS_UINT32;
+typedef uint16_t			ADS_UINT16;
+typedef uint32_t			ADS_UINT32;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ADS symbol information
@@ -70,8 +65,8 @@ typedef AdsSymbolEntry *PAdsSymbolEntry, **PPAdsSymbolEntry;
 
 typedef struct
 {
-	unsigned	long		lBound;
-	unsigned	long		elements;
+	uint32_t		lBound;
+	uint32_t		elements;
 } AdsDatatypeArrayInfo, *PAdsDatatypeArrayInfo;
 
 typedef struct
@@ -123,12 +118,12 @@ __inline PAdsDatatypeEntry AdsDatatypeStructItem(PAdsDatatypeEntry p, unsigned s
 
 typedef struct
 {
-	unsigned	long		nSymbols;
-	unsigned	long		nSymSize;
-	unsigned	long		nDatatypes;
-	unsigned	long		nDatatypeSize;
-	unsigned	long		nMaxDynSymbols;
-	unsigned	long		nUsedDynSymbols;
+	uint32_t		nSymbols;
+	uint32_t		nSymSize;
+	uint32_t		nDatatypes;
+	uint32_t		nDatatypeSize;
+	uint32_t		nMaxDynSymbols;
+	uint32_t		nUsedDynSymbols;
 } AdsSymbolUploadInfo2, *PAdsSymbolUploadInfo2;
 
 #pragma	pack( pop )

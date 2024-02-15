@@ -60,7 +60,7 @@ int jsonserver::start(int port, bool async)
                 std::string key = v.s();
                 keys.push_back(key);
             }
-            this->addPendingReadRequest(jsonRequest(conn, "read", keys, std::chrono::steady_clock::now()));
+            this->addPendingReadRequest(jsonRequest(conn, "read", keys, std::chrono::high_resolution_clock::now()));
         }
     });
 
@@ -146,18 +146,9 @@ int jsonserver::addDataSource(DataSource* ds)
 int jsonserver::readVariables(const std::vector<std::string>& keys)
 {
     //measure the time it takes to read the variables
-    {
-        auto start = getTimestamp();
-        this->dataSources.at(0)->readSymbolValue(keys);
-        auto end = getTimestamp();
-        std::cout << "Time to read variables 1: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;    
-    }
-    {
-        auto start = getTimestamp();
-        this->dataSources.at(0)->readSymbolValueDirect(keys[0]);
-        auto end = getTimestamp();
-        std::cout << "Time to read variables 2: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;    
-    }
+    auto start = getTimestamp();
+    this->dataSources.at(0)->readSymbolValue(keys);
+    auto end = getTimestamp();
     return 0;
 }
 
@@ -176,9 +167,9 @@ bool jsonserver::getPendingReadRequest(jsonRequest* req)
         pendingReadRequests.pop_front();
 
         //Check if the packet is really old, throw it out if it is
-        if (std::chrono::steady_clock::now() - req->receiveTime > std::chrono::milliseconds(3000)) {
+        if (std::chrono::high_resolution_clock::now() - req->receiveTime > std::chrono::milliseconds(3000)) {
             std::cout << "Packet too old, throwing it out. Age: " <<
-                (std::chrono::steady_clock::now() - req->receiveTime).count() << std::endl;
+                (std::chrono::high_resolution_clock::now() - req->receiveTime).count() << std::endl;
             continue;
         }
 

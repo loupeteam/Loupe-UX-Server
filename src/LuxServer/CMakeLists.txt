@@ -22,7 +22,8 @@ ENDIF(APPLE)
 
 project(luxserver)
 
+include_directories(PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 add_subdirectory(src)
 
-include_directories(PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

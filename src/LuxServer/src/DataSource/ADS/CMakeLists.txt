@@ -8,10 +8,6 @@ target_link_libraries(adsdatasrc PUBLIC util)
 #include the local files
 target_include_directories(adsdatasrc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-#include the global include directory for all targets
-target_include_directories(adsdatasrc PUBLIC ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(adsdatasrc PUBLIC ${CMAKE_SOURCE_DIR}/depends/Crow/include)
-
 #if windows use the windows library
 if(WIN32)
     target_include_directories(adsdatasrc PUBLIC ${CMAKE_SOURCE_DIR}/depends/ADS/AdsLib)

@@ -20,7 +20,7 @@ public:
     void setLocalAms(std::string netId);
 
     void setPlcCommunicationParameters(std::string IpV4,std::string netID, uint16_t port);
-
+    void setRouter(void *router);
     void readSymbolValue(std::string symbolName);
     void readSymbolValue(std::vector<std::string> symbolNames);
     void readSymbolValueDirect(std::string symbolName);

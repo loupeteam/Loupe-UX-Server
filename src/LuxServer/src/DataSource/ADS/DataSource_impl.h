@@ -35,10 +35,8 @@ public:
 
     adsdatasrc_impl(){}
     ~adsdatasrc_impl();
-    long nErr, nPort;
-    std::unique_ptr<AdsDevice> route = nullptr;
-    AmsAddr Addr;
-    AmsAddr* pAddr = &Addr;
+    long nErr;
+    std::shared_ptr<AdsDevice> route = nullptr;
 
     std::unordered_map<std::string, dataType_member_base*> dataTypes;
     crow::json::wvalue symbolData;
@@ -46,7 +44,6 @@ public:
 
     symbolMetadata& findInfo(std::string& symbolName);
     crow::json::wvalue& findValue(std::string& symbolName);
-    // dataType_member_base* getType(std::string& typeName);
 
     bool getMemberInfo(std::string targetSymbol, CAdsSymbolInfo Entry);
     bool getMemberInfo(std::string       targetSymbol,
@@ -55,7 +52,6 @@ public:
                        unsigned long     group,
                        uint32_t          offset);
 
-    // void prepareDatatypeParser(dataType_member_base* dataType);
     void populateSymbolInfo(symbolMetadata& symbol, std::string& symbolName,
                             unsigned long parentGroup, unsigned long parentOffset,
                             CAdsSymbolInfo& info);

@@ -12,6 +12,7 @@
 
 using namespace std;
 
+//The static impl is just used for to make debugging easier
 adsdatasrc_impl* static_impl;
 
 adsdatasrc::adsdatasrc()
@@ -22,10 +23,6 @@ adsdatasrc::adsdatasrc()
 
 adsdatasrc::~adsdatasrc()
 {
-    impl->nErr = AdsPortCloseEx(impl->nPort);
-    if (impl->nErr) {
-        cerr << "Error: AdsPortClose: " << impl->nErr << '\n';
-    }
     delete impl;
 }
 
@@ -37,7 +34,7 @@ void adsdatasrc::setPlcCommunicationParameters( std::string IpV4,std::string net
     const int NETID_PART_MIN = 0;
     const int NETID_PART_MAX = 255;
     unsigned char tempNetIdPartArr[REQUIRED_NUM_NET_ID_PARTS];
-
+    AmsNetId Addr;
     std::deque<std::string> netIdParts = split(netId, '.');
 
     // Check Deque size
@@ -71,12 +68,15 @@ void adsdatasrc::setPlcCommunicationParameters( std::string IpV4,std::string net
     
     // If no errors, assign netID parts
     for (int i = 0; i < REQUIRED_NUM_NET_ID_PARTS; i++) {
-        impl->Addr.netId.b[i] = tempNetIdPartArr[i];
+        Addr.b[i] = tempNetIdPartArr[i];
     }
 
-    impl->route = std::make_unique<AdsDevice>(AdsDevice{IpV4, impl->Addr.netId, port});
+    impl->route = std::make_shared<AdsDevice>(AdsDevice{IpV4, Addr, port});
+}
 
-    impl->pAddr->port = port;
+void adsdatasrc::setRouter(void *router){
+    
+    impl->route = *static_cast<std::shared_ptr<AdsDevice>*>(router);
 }
 
 //Set the local ams net id from a string
@@ -130,22 +130,6 @@ void adsdatasrc::setLocalAms(std::string netId)
 //Read the symbol and datatype data from the PLC
 void adsdatasrc::readPlcData()
 {    
-    cout << "Attempting to connect to NetID " << \
-            (int)impl->Addr.netId.b[0] << '.' << \
-            (int)impl->Addr.netId.b[1] << '.' << \
-            (int)impl->Addr.netId.b[2] << '.' << \
-            (int)impl->Addr.netId.b[3] << '.' << \
-            (int)impl->Addr.netId.b[4] << '.' << \
-            (int)impl->Addr.netId.b[5] << \
-            " on Port " << impl->pAddr->port << " ..." << '\n';
-
-        try{
-            AdsVariable<float> read_var{*impl->route, "MAIN.tiltConveyorPositionDegrees"};
-            cout << "Read value: " << read_var << std::flush;            
-        }catch(AdsException err){
-            cerr << "Error reading value" << err.errorCode << std::flush;
-        }
-        Sleep(1000);
     while (impl->readInfo() != 0) {
         #ifdef WIN32
         Sleep(1000);

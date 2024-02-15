@@ -18,8 +18,13 @@ At the present time, this server is capable of connection to Beckhoff PLCs, usin
 
 #### Necessary Installs
 
-* Twincat 3
-    - The ADS binaries that this Loupe UX Json server uses should be found to be located at `C:\TwinCAT\AdsApi\TcAdsDll`
+* ADS 
+    - For Windows
+        - There are pre-built binaries available at "src\LuxServer\lib"
+        - If you wish to build the library from source, the github repository is a submodule of this repository, and can be found [here](src\LuxServer\depends\ADS). The README in that repository contains instructions for building the library.
+    - For Linux
+        - you will need to build the ADS library from source. The github repository is a submodule of this repository, and can be found [here](src\LuxServer\depends\ADS). The README in that repository contains instructions for building the library.
+        - After building the library, install it to your system.
 
 * [CMake](https://cmake.org/download/) >= V3.27.1
     - Overview: CMake is a system for building C++ projects through whichever compiler you wish.

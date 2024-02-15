@@ -8,8 +8,6 @@
 #ifndef __ADSDEF_2_H__
 #define __ADSDEF_2_H__
 
-#include "AdsDef.h"
-
 #ifndef WIN32
 	typedef char BYTE;
 	typedef uint32_t ULONG;

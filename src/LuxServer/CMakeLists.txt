@@ -26,6 +26,9 @@ project(luxserver)
 
 include_directories(PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+add_definitions(-DNOMINMAX)
+
 add_subdirectory(src)
+add_subdirectory(depends/ADS)
 
 

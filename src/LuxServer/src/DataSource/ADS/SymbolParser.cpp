@@ -188,7 +188,7 @@ BOOL CAdsParseSymbols::Symbol(std::string name, CAdsSymbolInfo& info)
     while (pEntry = Symbol(i++)) {
         std::string symbolName = PADSSYMBOLNAME(pEntry);
         toLower(symbolName);
-        if (name.rfind(symbolName, 0) == 0) {
+        if (name.rfind(symbolName, 0) == 0 && (name[symbolName.size()] == '.' || name[symbolName.size()] == '[' || name == symbolName) ) {
             break;
         }
     }

@@ -2,6 +2,8 @@
     "serverType": "ADS",
     "adsParameters": {
         "netID": "127.0.0.1.1.1",
-        "port": 851
+        "port": 851,
+        "ipV4Address": "192.168.4.54",
+        "localAmsNetId": "192.168.125.2.1.2"
     }
 }

@@ -9,24 +9,23 @@
 #define __ADSDEF_2_H__
 
 #ifndef WIN32
-typedef char BYTE;
-typedef unsigned long ULONG;
-typedef unsigned short UINT16;
-typedef unsigned int UINT;
-typedef unsigned char UCHAR;
-typedef unsigned char BOOL;
-typedef char* PCHAR;
-typedef BYTE* PBYTE;
-typedef ULONG* PULONG;
-typedef UINT16* PUINT16;
-typedef UINT* PUINT;
-typedef UCHAR* PUCHAR;
-typedef BOOL* PBOOL;
-typedef void * PVOID;
-typedef unsigned short USHORT;
-#define FALSE 0
-#define TRUE 1
-
+	typedef char BYTE;
+	typedef unsigned long ULONG;
+	typedef unsigned short UINT16;
+	typedef unsigned int UINT;
+	typedef unsigned char UCHAR;
+	typedef unsigned char BOOL;
+	typedef char* PCHAR;
+	typedef BYTE* PBYTE;
+	typedef ULONG* PULONG;
+	typedef UINT16* PUINT16;
+	typedef UINT* PUINT;
+	typedef UCHAR* PUCHAR;
+	typedef BOOL* PBOOL;
+	typedef void * PVOID;
+	typedef unsigned short USHORT;
+	#define FALSE 0
+	#define TRUE 1
 #endif
 
 
@@ -132,71 +131,71 @@ typedef unsigned short USHORT;
 #define ADSERR_NOERR						0x00
 #define	ERR_ADSERRS							0x0700
 
-#define ADSERR_DEVICE_ERROR					(0x00+ERR_ADSERRS) // Error class < device error >
-#define ADSERR_DEVICE_SRVNOTSUPP			(0x01+ERR_ADSERRS) // Service is not supported by server
-#define ADSERR_DEVICE_INVALIDGRP 			(0x02+ERR_ADSERRS) // invalid indexGroup
-#define ADSERR_DEVICE_INVALIDOFFSET			(0x03+ERR_ADSERRS) // invalid indexOffset
-#define ADSERR_DEVICE_INVALIDACCESS			(0x04+ERR_ADSERRS) // reading/writing not permitted
-#define ADSERR_DEVICE_INVALIDSIZE			(0x05+ERR_ADSERRS) // parameter size not correct
-#define ADSERR_DEVICE_INVALIDDATA			(0x06+ERR_ADSERRS) // invalid parameter value(s)
-#define ADSERR_DEVICE_NOTREADY				(0x07+ERR_ADSERRS) // device is not in a ready state
-#define ADSERR_DEVICE_BUSY					(0x08+ERR_ADSERRS) // device is busy
-#define ADSERR_DEVICE_INVALIDCONTEXT		(0x09+ERR_ADSERRS) // invalid context (must be InWindows)
-#define ADSERR_DEVICE_NOMEMORY				(0x0A+ERR_ADSERRS) // out of memory
-#define ADSERR_DEVICE_INVALIDPARM			(0x0B+ERR_ADSERRS) // invalid parameter value(s)
-#define ADSERR_DEVICE_NOTFOUND				(0x0C+ERR_ADSERRS) // not found (files, ...)
-#define ADSERR_DEVICE_SYNTAX				(0x0D+ERR_ADSERRS) // syntax error in comand or file
-#define ADSERR_DEVICE_INCOMPATIBLE			(0x0E+ERR_ADSERRS) // objects do not match
-#define ADSERR_DEVICE_EXISTS				(0x0F+ERR_ADSERRS) // object already exists
-#define ADSERR_DEVICE_SYMBOLNOTFOUND		(0x10+ERR_ADSERRS) // symbol not found
-#define ADSERR_DEVICE_SYMBOLVERSIONINVALID	(0x11+ERR_ADSERRS) // symbol version invalid
-#define ADSERR_DEVICE_INVALIDSTATE			(0x12+ERR_ADSERRS) // server is in invalid state
-#define ADSERR_DEVICE_TRANSMODENOTSUPP		(0x13+ERR_ADSERRS) // AdsTransMode not supported
-#define ADSERR_DEVICE_NOTIFYHNDINVALID		(0x14+ERR_ADSERRS) // Notification handle is invalid
-#define ADSERR_DEVICE_CLIENTUNKNOWN			(0x15+ERR_ADSERRS) // Notification client not registered
-#define ADSERR_DEVICE_NOMOREHDLS			(0x16+ERR_ADSERRS) // no more notification handles
-#define ADSERR_DEVICE_INVALIDWATCHSIZE		(0x17+ERR_ADSERRS) // size for watch to big
-#define ADSERR_DEVICE_NOTINIT				(0x18+ERR_ADSERRS) // device not initialized
-#define ADSERR_DEVICE_TIMEOUT				(0x19+ERR_ADSERRS) // device has a timeout
-#define ADSERR_DEVICE_NOINTERFACE			(0x1A+ERR_ADSERRS) // query interface failed
-#define ADSERR_DEVICE_INVALIDINTERFACE		(0x1B+ERR_ADSERRS) // wrong interface required
-#define ADSERR_DEVICE_INVALIDCLSID			(0x1C+ERR_ADSERRS) // class ID is invalid
-#define ADSERR_DEVICE_INVALIDOBJID			(0x1D+ERR_ADSERRS) // object ID is invalid
-#define ADSERR_DEVICE_PENDING				(0x1E+ERR_ADSERRS) // request is pending
-#define ADSERR_DEVICE_ABORTED				(0x1F+ERR_ADSERRS) // request is aborted
-#define ADSERR_DEVICE_WARNING				(0x20+ERR_ADSERRS) // signal warning
-#define ADSERR_DEVICE_INVALIDARRAYIDX		(0x21+ERR_ADSERRS) // invalid array index
-#define ADSERR_DEVICE_SYMBOLNOTACTIVE		(0x22+ERR_ADSERRS) // symbol not active -> release handle and try again
-#define ADSERR_DEVICE_ACCESSDENIED			(0x23+ERR_ADSERRS) // access denied
-#define ADSERR_DEVICE_LICENSENOTFOUND		(0x24+ERR_ADSERRS) // no license found
-#define ADSERR_DEVICE_LICENSEEXPIRED		(0x25+ERR_ADSERRS) // license expired
-#define ADSERR_DEVICE_LICENSEEXCEEDED		(0x26+ERR_ADSERRS) // license exceeded
-#define ADSERR_DEVICE_LICENSEINVALID		(0x27+ERR_ADSERRS) // license invalid
-#define ADSERR_DEVICE_LICENSESYSTEMID		(0x28+ERR_ADSERRS) // license invalid system id
-#define ADSERR_DEVICE_LICENSENOTIMELIMIT	(0x29+ERR_ADSERRS) // license not time limited
-#define ADSERR_DEVICE_LICENSEFUTUREISSUE	(0x2A+ERR_ADSERRS) // license issue time in the future
-#define ADSERR_DEVICE_LICENSETIMETOLONG		(0x2B+ERR_ADSERRS) // license time period to long
-#define ADSERR_DEVICE_EXCEPTION				(0x2C+ERR_ADSERRS) // exception in device specific code
-#define ADSERR_DEVICE_LICENSEDUPLICATED		(0x2D+ERR_ADSERRS) // license file read twice
-#define ADSERR_DEVICE_SIGNATUREINVALID		(0x2E+ERR_ADSERRS) // invalid signature
-#define ADSERR_DEVICE_CERTIFICATEINVALID	(0x2F+ERR_ADSERRS) // public key certificate
+// #define ADSERR_DEVICE_ERROR					(0x00+ERR_ADSERRS) // Error class < device error >
+//#define ADSERR_DEVICE_SRVNOTSUPP			(0x01+ERR_ADSERRS) // Service is not supported by server
+//#define ADSERR_DEVICE_INVALIDGRP 			(0x02+ERR_ADSERRS) // invalid indexGroup
+//#define ADSERR_DEVICE_INVALIDOFFSET			(0x03+ERR_ADSERRS) // invalid indexOffset
+//#define ADSERR_DEVICE_INVALIDACCESS			(0x04+ERR_ADSERRS) // reading/writing not permitted
+//#define ADSERR_DEVICE_INVALIDSIZE			(0x05+ERR_ADSERRS) // parameter size not correct
+//#define ADSERR_DEVICE_INVALIDDATA			(0x06+ERR_ADSERRS) // invalid parameter value(s)
+//#define ADSERR_DEVICE_NOTREADY				(0x07+ERR_ADSERRS) // device is not in a ready state
+//#define ADSERR_DEVICE_BUSY					(0x08+ERR_ADSERRS) // device is busy
+//#define ADSERR_DEVICE_INVALIDCONTEXT		(0x09+ERR_ADSERRS) // invalid context (must be InWindows)
+//#define ADSERR_DEVICE_NOMEMORY				(0x0A+ERR_ADSERRS) // out of memory
+//#define ADSERR_DEVICE_INVALIDPARM			(0x0B+ERR_ADSERRS) // invalid parameter value(s)
+//#define ADSERR_DEVICE_NOTFOUND				(0x0C+ERR_ADSERRS) // not found (files, ...)
+//#define ADSERR_DEVICE_SYNTAX				(0x0D+ERR_ADSERRS) // syntax error in comand or file
+//#define ADSERR_DEVICE_INCOMPATIBLE			(0x0E+ERR_ADSERRS) // objects do not match
+//#define ADSERR_DEVICE_EXISTS				(0x0F+ERR_ADSERRS) // object already exists
+//#define ADSERR_DEVICE_SYMBOLNOTFOUND		(0x10+ERR_ADSERRS) // symbol not found
+//#define ADSERR_DEVICE_SYMBOLVERSIONINVALID	(0x11+ERR_ADSERRS) // symbol version invalid
+//#define ADSERR_DEVICE_INVALIDSTATE			(0x12+ERR_ADSERRS) // server is in invalid state
+//#define ADSERR_DEVICE_TRANSMODENOTSUPP		(0x13+ERR_ADSERRS) // AdsTransMode not supported
+//#define ADSERR_DEVICE_NOTIFYHNDINVALID		(0x14+ERR_ADSERRS) // Notification handle is invalid
+//#define ADSERR_DEVICE_CLIENTUNKNOWN			(0x15+ERR_ADSERRS) // Notification client not registered
+//#define ADSERR_DEVICE_NOMOREHDLS			(0x16+ERR_ADSERRS) // no more notification handles
+//#define ADSERR_DEVICE_INVALIDWATCHSIZE		(0x17+ERR_ADSERRS) // size for watch to big
+//#define ADSERR_DEVICE_NOTINIT				(0x18+ERR_ADSERRS) // device not initialized
+//#define ADSERR_DEVICE_TIMEOUT				(0x19+ERR_ADSERRS) // device has a timeout
+//#define ADSERR_DEVICE_NOINTERFACE			(0x1A+ERR_ADSERRS) // query interface failed
+//#define ADSERR_DEVICE_INVALIDINTERFACE		(0x1B+ERR_ADSERRS) // wrong interface required
+//#define ADSERR_DEVICE_INVALIDCLSID			(0x1C+ERR_ADSERRS) // class ID is invalid
+//#define ADSERR_DEVICE_INVALIDOBJID			(0x1D+ERR_ADSERRS) // object ID is invalid
+//#define ADSERR_DEVICE_PENDING				(0x1E+ERR_ADSERRS) // request is pending
+//#define ADSERR_DEVICE_ABORTED				(0x1F+ERR_ADSERRS) // request is aborted
+//#define ADSERR_DEVICE_WARNING				(0x20+ERR_ADSERRS) // signal warning
+//#define ADSERR_DEVICE_INVALIDARRAYIDX		(0x21+ERR_ADSERRS) // invalid array index
+//#define ADSERR_DEVICE_SYMBOLNOTACTIVE		(0x22+ERR_ADSERRS) // symbol not active -> release handle and try again
+//#define ADSERR_DEVICE_ACCESSDENIED			(0x23+ERR_ADSERRS) // access denied
+//#define ADSERR_DEVICE_LICENSENOTFOUND		(0x24+ERR_ADSERRS) // no license found
+//#define ADSERR_DEVICE_LICENSEEXPIRED		(0x25+ERR_ADSERRS) // license expired
+//#define ADSERR_DEVICE_LICENSEEXCEEDED		(0x26+ERR_ADSERRS) // license exceeded
+//#define ADSERR_DEVICE_LICENSEINVALID		(0x27+ERR_ADSERRS) // license invalid
+//#define ADSERR_DEVICE_LICENSESYSTEMID		(0x28+ERR_ADSERRS) // license invalid system id
+//#define ADSERR_DEVICE_LICENSENOTIMELIMIT	(0x29+ERR_ADSERRS) // license not time limited
+//#define ADSERR_DEVICE_LICENSEFUTUREISSUE	(0x2A+ERR_ADSERRS) // license issue time in the future
+//#define ADSERR_DEVICE_LICENSETIMETOLONG		(0x2B+ERR_ADSERRS) // license time period to long
+//#define ADSERR_DEVICE_EXCEPTION				(0x2C+ERR_ADSERRS) // exception in device specific code
+//#define ADSERR_DEVICE_LICENSEDUPLICATED		(0x2D+ERR_ADSERRS) // license file read twice
+//#define ADSERR_DEVICE_SIGNATUREINVALID		(0x2E+ERR_ADSERRS) // invalid signature
+//#define ADSERR_DEVICE_CERTIFICATEINVALID	(0x2F+ERR_ADSERRS) // public key certificate
 //
-#define ADSERR_CLIENT_ERROR					(0x40+ERR_ADSERRS) // Error class < client error >
-#define ADSERR_CLIENT_INVALIDPARM			(0x41+ERR_ADSERRS) // invalid parameter at service call
-#define ADSERR_CLIENT_LISTEMPTY				(0x42+ERR_ADSERRS) // polling list	is empty
-#define ADSERR_CLIENT_VARUSED				(0x43+ERR_ADSERRS) // var connection already in use
-#define ADSERR_CLIENT_DUPLINVOKEID			(0x44+ERR_ADSERRS) // invoke id in use
-#define ADSERR_CLIENT_SYNCTIMEOUT			(0x45+ERR_ADSERRS) // timeout elapsed
-#define ADSERR_CLIENT_W32ERROR				(0x46+ERR_ADSERRS) // error in win32 subsystem
-#define ADSERR_CLIENT_TIMEOUTINVALID		(0x47+ERR_ADSERRS) // ?
-#define ADSERR_CLIENT_PORTNOTOPEN			(0x48+ERR_ADSERRS) // ads dll
-#define ADSERR_CLIENT_NOAMSADDR				(0x49+ERR_ADSERRS) // ads dll
-#define ADSERR_CLIENT_SYNCINTERNAL			(0x50+ERR_ADSERRS) // internal error in ads sync
-#define ADSERR_CLIENT_ADDHASH				(0x51+ERR_ADSERRS) // hash table overflow
-#define ADSERR_CLIENT_REMOVEHASH			(0x52+ERR_ADSERRS) // key not found in hash table
-#define ADSERR_CLIENT_NOMORESYM				(0x53+ERR_ADSERRS) // no more symbols in cache
-#define ADSERR_CLIENT_SYNCRESINVALID		(0x54+ERR_ADSERRS) // invalid response received
-#define ADSERR_CLIENT_SYNCPORTLOCKED		(0x55+ERR_ADSERRS) // sync port is locked
+//#define ADSERR_CLIENT_ERROR					(0x40+ERR_ADSERRS) // Error class < client error >
+//#define ADSERR_CLIENT_INVALIDPARM			(0x41+ERR_ADSERRS) // invalid parameter at service call
+//#define ADSERR_CLIENT_LISTEMPTY				(0x42+ERR_ADSERRS) // polling list	is empty
+//#define ADSERR_CLIENT_VARUSED				(0x43+ERR_ADSERRS) // var connection already in use
+//#define ADSERR_CLIENT_DUPLINVOKEID			(0x44+ERR_ADSERRS) // invoke id in use
+//#define ADSERR_CLIENT_SYNCTIMEOUT			(0x45+ERR_ADSERRS) // timeout elapsed
+//#define ADSERR_CLIENT_W32ERROR				(0x46+ERR_ADSERRS) // error in win32 subsystem
+//#define ADSERR_CLIENT_TIMEOUTINVALID		(0x47+ERR_ADSERRS) // ?
+//#define ADSERR_CLIENT_PORTNOTOPEN			(0x48+ERR_ADSERRS) // ads dll
+//#define ADSERR_CLIENT_NOAMSADDR				(0x49+ERR_ADSERRS) // ads dll
+//#define ADSERR_CLIENT_SYNCINTERNAL			(0x50+ERR_ADSERRS) // internal error in ads sync
+//#define ADSERR_CLIENT_ADDHASH				(0x51+ERR_ADSERRS) // hash table overflow
+//#define ADSERR_CLIENT_REMOVEHASH			(0x52+ERR_ADSERRS) // key not found in hash table
+//#define ADSERR_CLIENT_NOMORESYM				(0x53+ERR_ADSERRS) // no more symbols in cache
+//#define ADSERR_CLIENT_SYNCRESINVALID		(0x54+ERR_ADSERRS) // invalid response received
+//#define ADSERR_CLIENT_SYNCPORTLOCKED		(0x55+ERR_ADSERRS) // sync port is locked
 
 #pragma	pack( push, 1)
 // typedef struct AmsNetId_
@@ -280,20 +279,7 @@ typedef unsigned short USHORT;
 	(	(unsigned char*)	(((PAdsNotificationHeader)pAdsNotificationHeader->data )
 
 
-////////////////////////////////////////////////////////////////////////////////
-// typedef void (__stdcall *PAdsNotificationFuncEx)(	AmsAddr*	pAddr,
-// 													AdsNotificationHeader* pNotification,
-// 													unsigned long hUser
-// 													);
 
-////////////////////////////////////////////////////////////////////////////////
-#define	ADSSYMBOLFLAG_PERSISTENT		0x00000001
-#define	ADSSYMBOLFLAG_BITVALUE			0x00000002
-#define	ADSSYMBOLFLAG_REFERENCETO		0x0004
-#define	ADSSYMBOLFLAG_TYPEGUID			0x0008
-#define	ADSSYMBOLFLAG_TCCOMIFACEPTR		0x0010
-#define	ADSSYMBOLFLAG_READONLY			0x0020
-#define	ADSSYMBOLFLAG_CONTEXTMASK		0x0F00
 
 ////////////////////////////////////////////////////////////////////////////////
 // ADS data types

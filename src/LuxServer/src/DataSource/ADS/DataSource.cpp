@@ -196,7 +196,7 @@ void adsdatasrc::readSymbolValue(std::string symbolName)
 
     //Parse the buffer into the variable
     if (nResult == ADSERR_NOERR) {
-        info.readFail = false;
+        info.readFail = 0;
         crow::json::wvalue& var = impl->findValue(symbolName);
         impl->parseBuffer(var, info, buffer, size);
     } else {
@@ -208,7 +208,7 @@ void adsdatasrc::readSymbolValue(std::string symbolName)
         }
         //This error means there isn't a getter for this property
         else if (nResult == 1796) {
-            info.readFail = true;
+            info.readFail = 1;
             var.clear();
         }
         //Unknown error, output it for the user
@@ -248,7 +248,7 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> reqSymbolNames)
     }
 
     //Allocate a buffer for the data
-    long reqNum = symbolNames.size();
+    size_t reqNum = symbolNames.size();
     dataPar* parReq = new dataPar[symbolNames.size()];
     dataPar* parReqPop = parReq;
 
@@ -303,7 +303,7 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> reqSymbolNames)
                 else if (result == 1796) {
                     var.clear();
                     //Remove this symbol from the reads and mark it as a failure
-                    info.readFail = true;
+                    info.readFail = 1;
                     impl->propertyReads.erase(std::remove(impl->propertyReads.begin(),
                                                           impl->propertyReads.end(),
                                                           symbolName),

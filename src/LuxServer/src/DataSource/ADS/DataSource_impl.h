@@ -12,7 +12,7 @@
 #include <ads/AdsLib.h>
 #include <ads/AdsVariable.h>
 #endif
-#include <AdsDef.h>
+#include <AdsExtension.h>
 
 #include "SymbolParser.h"
 #include "DataParser.h"

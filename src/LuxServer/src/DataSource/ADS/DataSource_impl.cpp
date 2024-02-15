@@ -35,7 +35,7 @@ bool adsdatasrc_impl::getMemberInfo(string            targetSymbol,
 {
     bool cacheComplete = true;
     CAdsSymbolInfo info;
-    for (size_t i = 0; i < parsedSymbols->SubSymbolCount(Entry); i++) {
+    for (UINT i = 0; i < parsedSymbols->SubSymbolCount(Entry); i++) {
         parsedSymbols->SubSymbolInfo(Entry, i, info);
         if (prefix != "") {
             if (Entry->arrayDim == 0) {
@@ -148,7 +148,7 @@ void adsdatasrc_impl::parseBuffer(crow::json::wvalue& variable,
     if (datatype.memberCount() == 0) {
         // Read failed means that we attempted to read it and go an error
         //  This usually means that the variable is not available
-        if (datatype.readFail == true) {
+        if (datatype.readFail == 1) {
             //Not Parsed
             variable.clear();
         }

@@ -14,7 +14,7 @@
 #else
 #include <ads/AdsLib.h>
 #endif
-#include <AdsDef.h>
+#include <AdsExtension.h>
 
 
 struct datatype_flags_struct {

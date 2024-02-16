@@ -20,7 +20,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // CAdsParseSymbols
-
+using namespace lux;
 CAdsParseSymbols::CAdsParseSymbols(PVOID pSymbols, UINT nSymSize, PVOID pDatatypes, UINT nDTSize)
 {
     memset(m_bufGetTypeByNameBuffer, 0, sizeof(m_bufGetTypeByNameBuffer));

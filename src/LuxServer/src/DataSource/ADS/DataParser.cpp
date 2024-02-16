@@ -1,4 +1,5 @@
 #include "DataParser.h"
+using namespace lux;
 
 bool dataType_member_base::encode(unsigned long type, BYTE* buffer, std::string& value, unsigned long size)
 {

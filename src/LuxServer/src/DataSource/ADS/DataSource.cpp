@@ -11,6 +11,7 @@
 #define impl ((adsdatasrc_impl*)_impl)
 
 using namespace std;
+using namespace lux;
 
 //The static impl is just used for to make debugging easier
 adsdatasrc_impl* static_impl;

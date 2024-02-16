@@ -8,6 +8,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace lux;
 
 int main(int argc, char const* argv[])
 {

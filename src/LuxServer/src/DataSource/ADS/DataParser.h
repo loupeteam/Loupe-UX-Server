@@ -8,6 +8,8 @@
 #include "SymbolParser.h"
 #include "util.h"
 
+namespace lux{
+
 class dataType_member_base {
 public:
     bool valid = false;
@@ -97,5 +99,5 @@ public:
         }
     }
 };
-
+}
 #endif // ADSPARSER_IMPL_H

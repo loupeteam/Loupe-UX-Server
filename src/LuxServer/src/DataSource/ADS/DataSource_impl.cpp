@@ -6,6 +6,7 @@
 #include "util.h"
 
 using namespace std;
+using namespace lux;
 
 adsdatasrc_impl::~adsdatasrc_impl()
 {

@@ -1,6 +1,8 @@
 #include "jsonserver.h"
 #include "util.h"
 
+using namespace lux;
+
 jsonserver::jsonserver() {}
 
 jsonserver::~jsonserver() {}

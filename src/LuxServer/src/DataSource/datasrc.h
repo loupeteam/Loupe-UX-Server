@@ -3,6 +3,7 @@
 
 #include <string>
 #include <crow/json.h>
+namespace lux {
 class DataSource {
     /* data */
 public:
@@ -14,5 +15,5 @@ public:
 
     virtual crow::json::wvalue getSymbolValue(std::string symbolName){ return crow::json::wvalue{}; }
 };
-
+}
 #endif // ADSDATASRC_H

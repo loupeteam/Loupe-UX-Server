@@ -14,8 +14,9 @@
 #else
 #include <ads/AdsLib.h>
 #endif
-#include <AdsExtension.h>
+#include "AdsExtension.h"
 
+namespace lux{
 
 struct datatype_flags_struct {
     bool DATATYPE;
@@ -123,5 +124,5 @@ protected:
 #define ADSDATATYPEFLAG_METHODINFOS 2048
 #define ADSDATATYPEFLAG_ATTRIBUTES 4096
 #define ADSDATATYPEFLAG_ENUMINFOS 8192
-
+}
 #endif // !defined(AFX_ADSPARSESYMBOLS_H__353EFDFE_6136_400C_A0E7_B24C2480E9F1__INCLUDED_)

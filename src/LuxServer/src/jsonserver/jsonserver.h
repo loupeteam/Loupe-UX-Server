@@ -8,7 +8,8 @@
 
 #include <crow.h>
 #include "../DataSource/datasrc.h"
-//#include <crow_all.h>
+
+namespace lux {
 
 class jsonRequest {
 public:
@@ -80,5 +81,5 @@ public:
     void responseThread();
     crow::json::wvalue getVariable(std::string);
 };
-
+} // namespace lux
 #endif // JSONSERVER

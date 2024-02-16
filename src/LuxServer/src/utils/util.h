@@ -3,6 +3,8 @@
 #include <vector>
 #include <chrono>
 
+namespace lux{
+
 //Converts string to lower in place
 void toLower(std::string& str);
 
@@ -19,3 +21,4 @@ double printTime(std::string                                    name,
 
 // File I/O
 int getFileContents(std::string fileName, std::string& contents);
+}

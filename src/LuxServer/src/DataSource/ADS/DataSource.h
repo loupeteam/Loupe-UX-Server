@@ -3,6 +3,7 @@
 #include "../datasrc.h"
 #include <string>
 
+namespace lux{
 
 class adsdatasrc : public DataSource {
 private:
@@ -36,5 +37,5 @@ public:
 
     crow::json::wvalue getSymbolValue(std::string symbolName);
 };
-
+}
 #endif // ADSDATASRC_H

@@ -12,12 +12,12 @@
 #include <ads/AdsLib.h>
 #include <ads/AdsVariable.h>
 #endif
-#include <AdsExtension.h>
+#include "AdsExtension.h"
 
 #include "SymbolParser.h"
 #include "DataParser.h"
 #include "util.h"
-
+namespace lux{
 class adsdatasrc_impl {
     crow::json::wvalue& find(std::string symbolName, crow::json::wvalue& datasource);
     void parseSymbols(void* pSymbols, unsigned int nSymSize);
@@ -73,5 +73,5 @@ struct dataPar {
     uint32_t indexOffset;      // index offset in ADS server interface
     uint32_t length;       // count of bytes to read
 };
-
+}
 #endif // ADSDATASRC_IMPL_H

@@ -176,7 +176,7 @@ void adsdatasrc::readSymbolValue(std::string symbolName)
         nResult = impl->route->ReadReqEx2(ADSIGRP_SYM_VALBYHND, info.handle, size, buffer, &bytesRead);
     } else {
         // Read a variable from ADS
-        nResult = impl->route->ReadReqEx2(info.group, info.offset, size, buffer, &bytesRead);
+        nResult = impl->route->ReadReqEx2(info.group, info.gOffset, size, buffer, &bytesRead);
     }
 
     //Parse the buffer into the variable

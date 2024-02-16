@@ -1,4 +1,7 @@
 #include "DataParser.h"
+#include <codecvt> // Include the <codecvt> header for std::wstring_convert
+#include <locale> // Include the <locale> header for std::wstring_convert
+
 using namespace lux;
 
 bool dataType_member_base::encode(unsigned long type, BYTE* buffer, std::string& value, unsigned long size)
@@ -150,8 +153,8 @@ bool dataType_member_base::parse(unsigned long type, crow::json::wvalue& variabl
     case 0x1F:     // WSTRING
         if (size > 0) {
             // Convert from a wstring to a string.
-            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
-            variable = converter.to_bytes((wchar_t*)buffer);
+            std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+            variable = converter.to_bytes(std::wstring((wchar_t*)buffer));
             return true;
         }
         break;

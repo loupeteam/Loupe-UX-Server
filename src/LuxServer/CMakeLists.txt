@@ -24,6 +24,9 @@ ENDIF(APPLE)
 
 project(luxserver)
 
+# Don't build shared libraries
+set(BUILD_SHARED_LIBS OFF)
+
 include_directories(PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_definitions(-DNOMINMAX)

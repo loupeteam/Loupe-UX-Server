@@ -16,7 +16,7 @@ if(WIN32)
 endif()
 target_link_libraries(server PUBLIC jsonserver)
 target_link_libraries(server PUBLIC adsdatasrc)
-target_link_libraries(server PUBLIC util)
+target_link_libraries(server PUBLIC luxutil)
 
 #add the router example
 ######################
@@ -29,4 +29,4 @@ if(WIN32)
 endif()
 target_link_libraries(server_router PUBLIC jsonserver)
 target_link_libraries(server_router PUBLIC adsdatasrc)
-target_link_libraries(server_router PUBLIC util)
+target_link_libraries(server_router PUBLIC luxutil)

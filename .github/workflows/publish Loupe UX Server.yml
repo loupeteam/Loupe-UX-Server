@@ -34,7 +34,7 @@ jobs:
         working-directory: ${{github.workspace}}/src/LuxServer
         run: cmake $GITHUB_WORKSPACE -G "Visual Studio 16 2019" -S . -B ./cmakebuild -A win32
       - name: Build Executable
-        run: cmake --build ./src/LuxServer/cmakebuild --config Release --target server
+        run: cmake --build ./src/LuxServer/cmakebuild --config Release --target luxserver
       - run: echo "🍏 The build's status is ${{ job.status }}."
       - name: Copy File
         run: |

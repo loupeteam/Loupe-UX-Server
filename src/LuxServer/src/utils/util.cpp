@@ -83,7 +83,6 @@ namespace lux{
             file.close();
             contents = buffer.str();
         } else {
-            std::cerr << "Failed to open the configuration file." << std::endl;
             return -1;
         }
 

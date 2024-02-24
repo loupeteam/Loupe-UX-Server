@@ -19,7 +19,7 @@ install(TARGETS adsdatasrc
   INCLUDES DESTINATION include
   )
 
-file(GLOB HEADERS "DataSource.h")
+file(GLOB HEADERS "DataSource.h" "AdsRpc.h")
 install(FILES ${HEADERS} DESTINATION include/lux/ads)
 
 

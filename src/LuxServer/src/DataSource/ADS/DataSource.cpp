@@ -80,6 +80,11 @@ void adsdatasrc::setRouter(void *router){
     impl->route = *static_cast<std::shared_ptr<AdsDevice>*>(router);
 }
 
+void * adsdatasrc::getRouter(){
+    
+    return (void*) &impl->route;
+}
+
 //Set the local ams net id from a string
 void adsdatasrc::setLocalAms(std::string netId)
 {

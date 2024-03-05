@@ -1,4 +1,4 @@
-name: Publish Loupe UX Server
+name: Publish Loupe UX Server Windows 32
 run-name: ${{ github.actor }} is publishing Loupe UX Server 🚀
 on:
   push:

@@ -40,7 +40,7 @@ jobs:
       - run: echo "🍏 The build's status is ${{ job.status }}."
       - name: List files in the cmakebuild folder to check what's been created
         run: |
-          ls ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server
+          ls ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/luxserver
       - name: Copy File
         run: cp ${{ github.workspace }}/src/LuxServer/configuration.json ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/Release/
       - name: Compress Folder

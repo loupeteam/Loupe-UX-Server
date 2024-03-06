@@ -4,62 +4,62 @@ run-name: ${{ github.actor }} is publishing Loupe UX Server For Win 32 🚀
 #  push:
 #    tags: 
 #      - '*'
-  workflow_dispatch:
-jobs:
-  Build-Loupe-UX-Server:
-    runs-on: windows-2019
-    steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your Tag is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v1.14
-        with:
-          cmake-version: '3.27.1'
-      - name: Use cmake
-        run: cmake --version
-      - name: Check out repository code
-        uses: actions/checkout@v4
-        with: 
-          submodules: true
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - name: CMake Generators List
-        run: cmake --help
-      - name: Configure CMake
-        shell: bash
-        working-directory: ${{github.workspace}}/src/LuxServer
-        run: cmake $GITHUB_WORKSPACE -G "Visual Studio 16 2019" -S . -B ./cmakebuild -A win32
-      - name: Build Executable
-        run: cmake --build ./src/LuxServer/cmakebuild --config Release --target luxserver
-      - run: echo "🍏 The build's status is ${{ job.status }}."
-      - name: Copy File
-        run: |
-            Copy-Item -Path ${{ github.workspace }}\src\LuxServer\configuration.json -Destination ${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release\
-      - name: Compress Folder
-        run: |
-            Compress-Archive -Path ${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release -${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release\luxserverwin32.zip
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-      - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release\luxserverwin32.zip
-          asset_name: luxserverwin32.zip
-          asset_content_type: application/vnd.microsoft.portable-executable
-      - run: echo "🎉 The release's status is ${{ job.status }}."
+#  workflow_dispatch:
+  jobs:
+    Build-Loupe-UX-Server:
+      runs-on: windows-2019
+      steps:
+        - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+        - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+        - run: echo "🔎 The name of your Tag is ${{ github.ref }} and your repository is ${{ github.repository }}."
+        - name: Setup cmake
+          uses: jwlawson/actions-setup-cmake@v1.14
+          with:
+            cmake-version: '3.27.1'
+        - name: Use cmake
+          run: cmake --version
+        - name: Check out repository code
+          uses: actions/checkout@v4
+          with: 
+            submodules: true
+        - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+        - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+        - name: List files in the repository
+          run: |
+            ls ${{ github.workspace }}
+        - name: CMake Generators List
+          run: cmake --help
+        - name: Configure CMake
+          shell: bash
+          working-directory: ${{github.workspace}}/src/LuxServer
+          run: cmake $GITHUB_WORKSPACE -G "Visual Studio 16 2019" -S . -B ./cmakebuild -A win32
+        - name: Build Executable
+          run: cmake --build ./src/LuxServer/cmakebuild --config Release --target luxserver
+        - run: echo "🍏 The build's status is ${{ job.status }}."
+        - name: Copy File
+          run: |
+              Copy-Item -Path ${{ github.workspace }}\src\LuxServer\configuration.json -Destination ${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release\
+        - name: Compress Folder
+          run: |
+              Compress-Archive -Path ${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release -${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release\luxserverwin32.zip
+        - name: Create Release
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag_name: ${{ github.ref }}
+            release_name: Release ${{ github.ref }}
+            draft: false
+            prerelease: false
+        - name: Upload Release Asset
+          id: upload-release-asset 
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+            asset_path: ${{ github.workspace }}\src\LuxServer\cmakebuild\src\server\Release\luxserverwin32.zip
+            asset_name: luxserverwin32.zip
+            asset_content_type: application/vnd.microsoft.portable-executable
+        - run: echo "🎉 The release's status is ${{ job.status }}."

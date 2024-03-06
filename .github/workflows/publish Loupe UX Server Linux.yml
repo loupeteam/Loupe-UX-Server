@@ -1,5 +1,5 @@
 name: Publish Loupe UX Server Linux
-run-name: ${{ github.actor }} is publishing Loupe UX Server 🚀
+run-name: ${{ github.actor }} is publishing Loupe UX Server For Linux 🚀
 on:
   push:
     tags: 

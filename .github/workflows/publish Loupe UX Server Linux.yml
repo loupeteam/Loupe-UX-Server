@@ -30,7 +30,7 @@ jobs:
       - name: CMake Generators List
         run: cmake --help
       - name: Configure CMake
-        run: cmake -S ${{github.workspace}}/src/LuxServer -B ${{github.workspace}}/src/LuxServer/cmakebuild -G "Unix Makefiles"
+        run: cmake $GITHUB_WORKSPACE/src/LuxServer -S $GITHUB_WORKSPACE/src/LuxServer -B $GITHUB_WORKSPACE/src/LuxServer/cmakebuild
       - name: Build Executable
         run: cmake --build ${{github.workspace}}/src/LuxServer/cmakebuild --config Release --target luxserver
       - run: echo "🍏 The build's status is ${{ job.status }}."

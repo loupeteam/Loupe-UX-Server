@@ -46,9 +46,9 @@ jobs:
           ls -Rl ${{ github.workspace }}/src/LuxServer/cmakebuild 
       - name: Create Directory and Add Files
         run: |
-          mkdir ${{ github.workspace }}/src/LuxServer/cmakebuild/debianpackage
-          cp ${{ github.workspace }}/src/LuxServer/configuration.json ${{ github.workspace }}/src/LuxServer/cmakebuild/debianpackage
-          cp ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/luxserver ${{ github.workspace }}/src/LuxServer/cmakebuild/debianpackage
+          mkdir -p ${{ github.workspace }}/src/LuxServer/cmakebuild/debianpackage/DEBIAN/control
+          cp ${{ github.workspace }}/src/LuxServer/configuration.json ${{ github.workspace }}/src/LuxServer/cmakebuild/debianpackage/DEBIAN/control
+          cp ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/luxserver ${{ github.workspace }}/src/LuxServer/cmakebuild/debianpackage/DEBIAN/control
       - name: Build Debian package
         run: dpkg-deb --build ${{ github.workspace }}/src/LuxServer/cmakebuild/debianpackage luxservdebian.deb
       - name: Show file names after debian package is built

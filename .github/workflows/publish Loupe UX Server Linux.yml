@@ -44,10 +44,13 @@ jobs:
       - name: List files in the cmakebuild folder to check what's been created
         run: |
           ls -Rl ${{ github.workspace }}/src/LuxServer/cmakebuild 
-      - name: Copy File
-        run: cp ${{ github.workspace }}/src/LuxServer/configuration.json ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/Release/
-      - name: Compress Folder
-        run: zip -r ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/Release/luxserverlinux.zip ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/Release
+      - name: Create Directory and Add Files
+        run: |
+          mkdir ${{ github.workspace }}/src/LuxServer/cmakebuild/debianpackage
+          cp ${{ github.workspace }}/src/LuxServer/configuration.json ${{ github.workspace }}/src/LuxServer/cmakebuild/debianpackage
+          cp ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/luxserver${{ github.workspace }}/src/LuxServer/cmakebuild/debianpackage
+      - name: Build Debian package
+        run: dpkg-deb --build debianpackage luxservdebian.deb
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

@@ -49,13 +49,13 @@ jobs:
       - name: Create Directory and Add Files
         run: |
           mkdir -p build/DEBIAN
-          cp ${{ github.workspace }}/src/LuxServer/configuration.json build/DEBIAN/
-          cp ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/luxserver build/DEBIAN/
+          cp ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/luxserver build/DEBIAN/control
+          cp ${{ github.workspace }}/src/LuxServer/configuration.json build/DEBIAN/control
       - name: Show file names after debian package is built
         run: |
           ls -Rl build/DEBIAN/
       - name: Build Debian package
-        run: dpkg-deb --build build #luxservdebian.deb
+        run: dpkg-deb --build build luxservdebian.deb
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -73,7 +73,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: build/DEBIAN/control/luxservdebian.deb
+          asset_path: build/DEBIAN/luxservdebian.deb
           asset_name: luxserverlinux.deb
           asset_content_type: application/deb
       - run: echo "🎉 The release's status is ${{ job.status }}."

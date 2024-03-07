@@ -49,11 +49,11 @@ jobs:
       - name: Create Directory and Add Files
         run: |
           mkdir -p build/DEBIAN
-          cp ${{ github.workspace }}/src/LuxServer/configuration.json build/DEBIAN/control
-          cp ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/luxserver build/DEBIAN/control
+          cp ${{ github.workspace }}/src/LuxServer/configuration.json build/DEBIAN/
+          cp ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/luxserver build/DEBIAN/
       - name: Show file names after debian package is built
         run: |
-          ls -Rl build/DEBIAN/control
+          ls -Rl build/DEBIAN/
       - name: Build Debian package
         run: dpkg-deb --build build luxservdebian.deb
       - name: Create Release

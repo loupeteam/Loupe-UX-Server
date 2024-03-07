@@ -55,7 +55,7 @@ jobs:
         run: |
           ls -Rl build/DEBIAN/
       - name: Build Debian package
-        run: dpkg-deb --build build luxservdebian.deb
+        run: dpkg-deb --build build #luxservdebian.deb
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

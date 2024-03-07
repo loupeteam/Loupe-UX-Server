@@ -51,11 +51,11 @@ jobs:
           mkdir -p build/DEBIAN
           cp ${{ github.workspace }}/src/LuxServer/configuration.json build/DEBIAN/control
           cp ${{ github.workspace }}/src/LuxServer/cmakebuild/src/server/luxserver build/DEBIAN/control
-      - name: Build Debian package
-        run: dpkg-deb --build build luxservdebian.deb
       - name: Show file names after debian package is built
         run: |
           ls -Rl build/DEBIAN/control
+      - name: Build Debian package
+        run: dpkg-deb --build build luxservdebian.deb
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

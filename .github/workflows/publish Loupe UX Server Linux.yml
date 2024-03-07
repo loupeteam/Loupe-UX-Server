@@ -26,7 +26,7 @@ jobs:
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: List files in the repository
         run: |
-          ls ${{ github.workspace }}
+          ls -R ${{ github.workspace }}
       - name: Update apt packages
         run: sudo apt update
       - name: Install Asio library
@@ -35,6 +35,9 @@ jobs:
         run: cmake --help
       - name: Configure CMake
         run: cmake $GITHUB_WORKSPACE/src/LuxServer -S $GITHUB_WORKSPACE/src/LuxServer -B $GITHUB_WORKSPACE/src/LuxServer/cmakebuild
+      - name: List files after cmake is configured
+        run: |
+          ls -R ${{ github.workspace }}
       - name: Build Executable
         run: cmake --build ${{github.workspace}}/src/LuxServer/cmakebuild --config Release --target luxserver
       - run: echo "🍏 The build's status is ${{ job.status }}."

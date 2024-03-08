@@ -55,7 +55,7 @@ jobs:
       - name: Create control file
         run: |
           echo "Package: mypackage" > build/DEBIAN/control
-          echo "Version: ${{ github.ref }}" >> build/DEBIAN/control
+          echo "Version: 1-0-1" >> build/DEBIAN/control
           echo "Section: base" >> build/DEBIAN/control
           echo "Priority: optional" >> build/DEBIAN/control
           echo "Architecture: amd64" >> build/DEBIAN/control

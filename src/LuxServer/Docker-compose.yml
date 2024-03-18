@@ -6,8 +6,5 @@ services:
       context: .
       dockerfile: Dockerfile
     image: lux-dev-image:latest
-    container_name: lux-dev-container
     volumes:
       - .:/src
-       
-

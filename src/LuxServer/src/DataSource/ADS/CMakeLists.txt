@@ -1,19 +1,25 @@
 file(GLOB path_SRC "*.cpp" )
 
 #add the library
-add_library( adsdatasrc ${path_SRC} )
+add_library( adsdatasrc STATIC ${path_SRC} )
+add_library( adsdatasrc::adsdatasrc ALIAS adsdatasrc )
 
 #include the local files
-target_include_directories(adsdatasrc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(adsdatasrc PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/lux>)
 
-#include the ADS API
-target_include_directories(adsdatasrc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/Include)
+target_link_libraries(adsdatasrc PUBLIC luxutil::luxutil)
+target_link_libraries(adsdatasrc PUBLIC ads::ads)
 
-#include the global include directory for all targets
-target_include_directories(adsdatasrc PUBLIC ${CMAKE_SOURCE_DIR}/include)
+# export library (either static or shared depending on BUILD_SHARED_LIBS)
+install(TARGETS adsdatasrc
+  EXPORT adsdatasrc_target
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+  )
 
-target_link_libraries(adsdatasrc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/TcAdsDll.lib)
+file(GLOB HEADERS "DataSource.h" "AdsRpc.h")
+install(FILES ${HEADERS} DESTINATION include/lux/ads)
 
-#find and link to asio
-find_package(asio CONFIG)
-target_link_libraries(adsdatasrc PRIVATE asio::asio)
+

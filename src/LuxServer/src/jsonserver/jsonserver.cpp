@@ -1,6 +1,7 @@
 #include "jsonserver.h"
-#include "crow_all.h"
 #include "util.h"
+
+using namespace lux;
 
 jsonserver::jsonserver() {}
 
@@ -61,7 +62,7 @@ int jsonserver::start(int port, bool async)
                 std::string key = v.s();
                 keys.push_back(key);
             }
-            this->addPendingReadRequest(jsonRequest(conn, "read", keys, std::chrono::steady_clock::now()));
+            this->addPendingReadRequest(jsonRequest(conn, "read", keys, std::chrono::high_resolution_clock::now()));
         }
     });
 
@@ -146,7 +147,10 @@ int jsonserver::addDataSource(DataSource* ds)
 
 int jsonserver::readVariables(const std::vector<std::string>& keys)
 {
+    //measure the time it takes to read the variables
+    auto start = getTimestamp();
     this->dataSources.at(0)->readSymbolValue(keys);
+    auto end = getTimestamp();
     return 0;
 }
 
@@ -165,9 +169,9 @@ bool jsonserver::getPendingReadRequest(jsonRequest* req)
         pendingReadRequests.pop_front();
 
         //Check if the packet is really old, throw it out if it is
-        if (std::chrono::steady_clock::now() - req->receiveTime > std::chrono::milliseconds(3000)) {
+        if (std::chrono::high_resolution_clock::now() - req->receiveTime > std::chrono::milliseconds(3000)) {
             std::cout << "Packet too old, throwing it out. Age: " <<
-                (std::chrono::steady_clock::now() - req->receiveTime).count() << std::endl;
+                (std::chrono::high_resolution_clock::now() - req->receiveTime).count() << std::endl;
             continue;
         }
 
@@ -249,7 +253,7 @@ int jsonserver::handlePendingRequests()
 
         //Send the request to the PLC
         this->readVariables(keys);
-
+        
         mtx_pendingResponse.lock();
         for ( auto& kv : currentRequest) {
             kv.second.finishRequestTime = getTimestamp();
@@ -311,10 +315,10 @@ void jsonRequest::printTimes()
 {
     //Print the delta times
     std::cout << "\n Delta times:" << std::endl;
-    printTime("Time waiting for request pick : ", receiveTime, pickedTime);
-    printTime("Time to Generate Variables    : ", pickedTime, sendRequestTime);
+    // printTime("Time waiting for request pick : ", receiveTime, pickedTime);
+    // printTime("Time to Generate Variables    : ", pickedTime, sendRequestTime);
     printTime("Time to talk to PLC           : ", sendRequestTime, finishRequestTime);
-    printTime("Time waiting for response pick: ", finishRequestTime, sendResponseTime);
-    printTime("Time to respond               : ", sendResponseTime, finishResponseTime);
-    printTime("Total response time:          : ", receiveTime, finishResponseTime);
+    // printTime("Time waiting for response pick: ", finishRequestTime, sendResponseTime);
+    // printTime("Time to respond               : ", sendResponseTime, finishResponseTime);
+    // printTime("Total response time:          : ", receiveTime, finishResponseTime);
 }

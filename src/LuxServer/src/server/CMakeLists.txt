@@ -1,21 +1,41 @@
 file(GLOB path_SRC "*.cpp" )
 
 #add the library
-add_executable(server ${path_SRC} )
-
-#find and link to asio
-find_package(asio CONFIG)
-target_link_libraries(server PRIVATE asio::asio)
+add_executable(luxserver ${path_SRC} )
 
 #include the local files
-target_include_directories(server PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(luxserver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-#include the global include directory for all targets
-target_include_directories(server PUBLIC ${CMAKE_SOURCE_DIR}/include)
+#find and link to asio
+if(WIN32)
+    find_package(asio CONFIG)
+endif()
 
-#link to jsonserver
-target_link_libraries(server PUBLIC jsonserver)
-target_include_directories(server PUBLIC $<TARGET_PROPERTY:jsonserver,INTERFACE_INCLUDE_DIRECTORIES>)
+if(WIN32)
+    target_link_libraries(luxserver PRIVATE asio::asio)
+endif()
+target_link_libraries(luxserver PUBLIC jsonserver)
+target_link_libraries(luxserver PUBLIC adsdatasrc)
+target_link_libraries(luxserver PUBLIC luxutil)
 
-target_link_libraries(server PUBLIC adsdatasrc)
-target_link_libraries(server PUBLIC util)
+#add the router example
+######################
+add_executable(server_router example/server.cpp )
+#include the local files
+target_include_directories(server_router PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(WIN32)
+    target_link_libraries(server_router PRIVATE asio::asio)
+endif()
+target_link_libraries(server_router PUBLIC jsonserver)
+target_link_libraries(server_router PUBLIC adsdatasrc)
+target_link_libraries(server_router PUBLIC luxutil)
+
+#install the executable
+if(WIN32)
+install(TARGETS luxserver DESTINATION /)
+install(FILES ${CMAKE_SOURCE_DIR}/configuration.json DESTINATION /)
+else()
+install(TARGETS luxserver DESTINATION /usr/local/bin)
+install(FILES ${CMAKE_SOURCE_DIR}/configuration.json DESTINATION /etc/lux/)
+endif()

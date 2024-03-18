@@ -1,7 +1,12 @@
 {
     "serverType": "ADS",
     "adsParameters": {
-        "netID": "127.0.0.1.1.1",
-        "port": 851
+        "netID": "192.168.0.46.1.1",
+        "port": 851,
+        "ipV4Address": "192.168.4.54",
+        "localAmsNetId": "192.168.125.2.1.2"
+    },
+    "webSocket": {
+        "port": 8000
     }
 }

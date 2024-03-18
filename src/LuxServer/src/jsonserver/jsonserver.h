@@ -4,16 +4,21 @@
 #include <mutex>
 #include <unordered_set>
 #include <vector>
+#include <deque>
+
+#include <crow.h>
 #include "../DataSource/datasrc.h"
+
+namespace lux {
 
 class jsonRequest {
 public:
-    std::chrono::steady_clock::time_point receiveTime;
-    std::chrono::steady_clock::time_point pickedTime;
-    std::chrono::steady_clock::time_point sendRequestTime;
-    std::chrono::steady_clock::time_point finishRequestTime;
-    std::chrono::steady_clock::time_point sendResponseTime;
-    std::chrono::steady_clock::time_point finishResponseTime;
+    std::chrono::high_resolution_clock::time_point receiveTime;
+    std::chrono::high_resolution_clock::time_point pickedTime;
+    std::chrono::high_resolution_clock::time_point sendRequestTime;
+    std::chrono::high_resolution_clock::time_point finishRequestTime;
+    std::chrono::high_resolution_clock::time_point sendResponseTime;
+    std::chrono::high_resolution_clock::time_point finishResponseTime;
     std::string type;
     crow::websocket::connection* conn = nullptr;
     std::vector<std::string> keys;
@@ -22,7 +27,7 @@ public:
     jsonRequest(crow::websocket::connection&          conn,
                 std::string                           type,
                 std::vector<std::string>              keys,
-                std::chrono::steady_clock::time_point receiveTime) : conn(&conn), type(type), keys(keys), receiveTime(
+                std::chrono::high_resolution_clock::time_point receiveTime) : conn(&conn), type(type), keys(keys), receiveTime(
             receiveTime)
     {}
     jsonRequest(){}
@@ -76,5 +81,5 @@ public:
     void responseThread();
     crow::json::wvalue getVariable(std::string);
 };
-
+} // namespace lux
 #endif // JSONSERVER

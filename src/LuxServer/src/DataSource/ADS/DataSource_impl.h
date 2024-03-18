@@ -4,18 +4,20 @@
 #include <memory>
 #include <string>
 #include <map>
-typedef int BOOL;
-typedef unsigned long ULONG;
-typedef ULONG* PULONG;
 
-#include <TcAdsDef.h>
-#include <TcAdsAPI.h>
-#include "crow_all.h"
+#ifdef WIN32
+#include <AdsLib.h>
+#include "AdsVariable.h"
+#else
+#include <ads/AdsLib.h>
+#include <ads/AdsVariable.h>
+#endif
+#include "AdsExtension.h"
 
 #include "SymbolParser.h"
 #include "DataParser.h"
 #include "util.h"
-
+namespace lux{
 class adsdatasrc_impl {
     crow::json::wvalue& find(std::string symbolName, crow::json::wvalue& datasource);
     void parseSymbols(void* pSymbols, unsigned int nSymSize);
@@ -33,9 +35,8 @@ public:
 
     adsdatasrc_impl(){}
     ~adsdatasrc_impl();
-    long nErr, nPort;
-    AmsAddr Addr;
-    AmsAddr* pAddr = &Addr;
+    long nErr;
+    std::shared_ptr<AdsDevice> route = nullptr;
 
     std::unordered_map<std::string, dataType_member_base*> dataTypes;
     crow::json::wvalue symbolData;
@@ -43,7 +44,6 @@ public:
 
     symbolMetadata& findInfo(std::string& symbolName);
     crow::json::wvalue& findValue(std::string& symbolName);
-    // dataType_member_base* getType(std::string& typeName);
 
     bool getMemberInfo(std::string targetSymbol, CAdsSymbolInfo Entry);
     bool getMemberInfo(std::string       targetSymbol,
@@ -52,7 +52,6 @@ public:
                        unsigned long     group,
                        uint32_t          offset);
 
-    // void prepareDatatypeParser(dataType_member_base* dataType);
     void populateSymbolInfo(symbolMetadata& symbol, std::string& symbolName,
                             unsigned long parentGroup, unsigned long parentOffset,
                             CAdsSymbolInfo& info);
@@ -70,9 +69,9 @@ public:
 };
 
 struct dataPar {
-    unsigned long indexGroup;   // index group in ADS server interface
-    unsigned long indexOffset;      // index offset in ADS server interface
-    unsigned long length;       // count of bytes to read
+    uint32_t indexGroup;   // index group in ADS server interface
+    uint32_t indexOffset;      // index offset in ADS server interface
+    uint32_t length;       // count of bytes to read
 };
-
+}
 #endif // ADSDATASRC_IMPL_H

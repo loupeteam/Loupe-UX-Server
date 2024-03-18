@@ -6,6 +6,7 @@
 #include "util.h"
 
 using namespace std;
+using namespace lux;
 
 adsdatasrc_impl::~adsdatasrc_impl()
 {
@@ -35,7 +36,7 @@ bool adsdatasrc_impl::getMemberInfo(string            targetSymbol,
 {
     bool cacheComplete = true;
     CAdsSymbolInfo info;
-    for (size_t i = 0; i < parsedSymbols->SubSymbolCount(Entry); i++) {
+    for (UINT i = 0; i < parsedSymbols->SubSymbolCount(Entry); i++) {
         parsedSymbols->SubSymbolInfo(Entry, i, info);
         if (prefix != "") {
             if (Entry->arrayDim == 0) {
@@ -98,8 +99,9 @@ bool adsdatasrc_impl::supportType(ULONG flags)
 long adsdatasrc_impl::readInfo()
 {
     AdsSymbolUploadInfo2 info;
-    long nResult = AdsSyncReadReq(this->pAddr, ADSIGRP_SYM_UPLOADINFO2, 0,
-                                  sizeof(info), &info);
+	uint32_t bytesRead;
+
+    long nResult = route->ReadReqEx2(ADSIGRP_SYM_UPLOADINFO2, 0, sizeof(info), &info, &bytesRead);
 
     if (nResult == ADSERR_NOERR) {
         // size of symbol information
@@ -108,12 +110,10 @@ long adsdatasrc_impl::readInfo()
 
         if (pSym && pDT) {
             // upload symbols (instances)
-            long resultSym = AdsSyncReadReq(this->pAddr, ADSIGRP_SYM_UPLOAD, 0,
-                                            info.nSymSize, pSym);
+            long resultSym = route->ReadReqEx2(ADSIGRP_SYM_UPLOAD, 0, info.nSymSize, pSym, &bytesRead);
             // get size of datatype description
             // upload datatye-descriptions
-            long resultDt = AdsSyncReadReq(this->pAddr, ADSIGRP_SYM_DT_UPLOAD, 0,
-                                           info.nDatatypeSize, pDT);
+            long resultDt = route->ReadReqEx2(ADSIGRP_SYM_DT_UPLOAD, 0, info.nDatatypeSize, pDT, &bytesRead);
 
             this->parsedSymbols = new CAdsParseSymbols(pSym, info.nSymSize, pDT,
                                                        info.nDatatypeSize);
@@ -143,13 +143,13 @@ void adsdatasrc_impl::parseBuffer(crow::json::wvalue& variable,
                                   void*               pBuffer,
                                   unsigned long       size)
 {
-    byte* buffer = (byte*)pBuffer;
+    unsigned char* buffer = (unsigned char*)pBuffer;
 
     //If this is a basic data type, then we can parse it with the given parser
     if (datatype.memberCount() == 0) {
         // Read failed means that we attempted to read it and go an error
         //  This usually means that the variable is not available
-        if (datatype.readFail == true) {
+        if (datatype.readFail == 1) {
             //Not Parsed
             variable.clear();
         }
@@ -171,12 +171,12 @@ void adsdatasrc_impl::parseBuffer(crow::json::wvalue& variable,
     } else {
         //If this has members, we need to go through them and parse them
         int i = 0;
-        for ( auto member : datatype.members()) {
+        for ( auto &member : datatype.members()) {
             crow::json::wvalue& var = datatype.isArray ? variable[i] : variable[member.first];
             parseBuffer(var,
-                        member.second,
-                        buffer + member.second.offset,
-                        member.second.size);
+                        *member.second,
+                        buffer + member.second->offset,
+                        member.second->size);
             i++;
         }
     }

@@ -1,44 +1,41 @@
 #include "DataSource.h"
 #include "DataSource_impl.h"
 
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 #include <iostream>
 
 #define impl ((adsdatasrc_impl*)_impl)
 
 using namespace std;
+using namespace lux;
 
+//The static impl is just used for to make debugging easier
 adsdatasrc_impl* static_impl;
 
 adsdatasrc::adsdatasrc()
 {
     _impl = new adsdatasrc_impl();
-    //TODO: Make this configurable
-    impl->nPort = AdsPortOpen();
-
-    // set default communication parameters
-    this->setPlcCommunicationParameters("127.0.0.1.1.1", 851);
-
     static_impl = impl;
 }
 
 adsdatasrc::~adsdatasrc()
 {
-    impl->nErr = AdsPortClose();
-    if (impl->nErr) {
-        cerr << "Error: AdsPortClose: " << impl->nErr << '\n';
-    }
     delete impl;
 }
 
 
-void adsdatasrc::setPlcCommunicationParameters(std::string netId, uint16_t port)
+void adsdatasrc::setPlcCommunicationParameters( std::string IpV4,std::string netId, uint16_t port)
 {
 
     const int REQUIRED_NUM_NET_ID_PARTS = 6;
     const int NETID_PART_MIN = 0;
     const int NETID_PART_MAX = 255;
     unsigned char tempNetIdPartArr[REQUIRED_NUM_NET_ID_PARTS];
-
+    AmsNetId Addr;
     std::deque<std::string> netIdParts = split(netId, '.');
 
     // Check Deque size
@@ -72,27 +69,79 @@ void adsdatasrc::setPlcCommunicationParameters(std::string netId, uint16_t port)
     
     // If no errors, assign netID parts
     for (int i = 0; i < REQUIRED_NUM_NET_ID_PARTS; i++) {
-        impl->Addr.netId.b[i] = tempNetIdPartArr[i];
+        Addr.b[i] = tempNetIdPartArr[i];
     }
 
-    impl->pAddr->port = port;
+    impl->route = std::make_shared<AdsDevice>(AdsDevice{IpV4, Addr, port});
 }
 
+void adsdatasrc::setRouter(void *router){
+    
+    impl->route = *static_cast<std::shared_ptr<AdsDevice>*>(router);
+}
+
+void * adsdatasrc::getRouter(){
+    
+    return (void*) &impl->route;
+}
+
+//Set the local ams net id from a string
+void adsdatasrc::setLocalAms(std::string netId)
+{
+    const int REQUIRED_NUM_NET_ID_PARTS = 6;
+    const int NETID_PART_MIN = 0;
+    const int NETID_PART_MAX = 255;
+    unsigned char tempNetIdPartArr[REQUIRED_NUM_NET_ID_PARTS];
+
+    std::deque<std::string> netIdParts = split(netId, '.');
+    
+    AmsNetId localAmsNetId;
+
+    // Check Deque size
+    if (netIdParts.size() != REQUIRED_NUM_NET_ID_PARTS) {
+        cerr << "Could not process netID.";
+        return;
+    }
+
+    // Convert each part into integer. Check if within limits.
+    for (int i = 0; i < REQUIRED_NUM_NET_ID_PARTS; i++) {
+        
+        try {
+            std::string temp = netIdParts.front();
+            int n = std::stoi(temp, nullptr);
+
+            if ((n >= NETID_PART_MIN) && (n <= NETID_PART_MAX)) {
+                tempNetIdPartArr[i] = n;
+            }
+            else {
+                cerr << "Out-of-range part of netID.";
+                return;
+            }
+            
+            netIdParts.pop_front();
+        }
+        catch(...) {
+            cerr << "Could not process part of netID.";
+            return;
+        } 
+    }
+    
+    // If no errors, assign netID parts
+    for (int i = 0; i < REQUIRED_NUM_NET_ID_PARTS; i++) {
+        localAmsNetId.b[i] = tempNetIdPartArr[i];
+    }
+    bhf::ads::SetLocalAddress(localAmsNetId);
+}
 
 //Read the symbol and datatype data from the PLC
 void adsdatasrc::readPlcData()
-{
-    cout << "Attempting to connect to NetID " << \
-            (int)impl->Addr.netId.b[0] << '.' << \
-            (int)impl->Addr.netId.b[1] << '.' << \
-            (int)impl->Addr.netId.b[2] << '.' << \
-            (int)impl->Addr.netId.b[3] << '.' << \
-            (int)impl->Addr.netId.b[4] << '.' << \
-            (int)impl->Addr.netId.b[5] << \
-            " on Port " << impl->pAddr->port << " ..." << '\n';
-
+{    
     while (impl->readInfo() != 0) {
+        #ifdef WIN32
         Sleep(1000);
+        #else
+        sleep(1000);
+        #endif
         cerr << "No PLC Connections, will try again " << '\n';
     }
 }
@@ -126,17 +175,18 @@ void adsdatasrc::readSymbolValue(std::string symbolName)
     unsigned long size = info.size;
     BYTE* buffer = new BYTE[size];
     long nResult;
+    uint32_t bytesRead;
     if (info.flags_struct.PROPITEM) {
         // Read value of a PLC variable (by handle)
-        nResult = AdsSyncReadReq(impl->pAddr, ADSIGRP_SYM_VALBYHND, info.handle, size, buffer);
+        nResult = impl->route->ReadReqEx2(ADSIGRP_SYM_VALBYHND, info.handle, size, buffer, &bytesRead);
     } else {
         // Read a variable from ADS
-        nResult = AdsSyncReadReq(impl->pAddr, info.group, info.offset, size, buffer);
+        nResult = impl->route->ReadReqEx2(info.group, info.gOffset, size, buffer, &bytesRead);
     }
 
     //Parse the buffer into the variable
     if (nResult == ADSERR_NOERR) {
-        info.readFail = false;
+        info.readFail = 0;
         crow::json::wvalue& var = impl->findValue(symbolName);
         impl->parseBuffer(var, info, buffer, size);
     } else {
@@ -148,7 +198,7 @@ void adsdatasrc::readSymbolValue(std::string symbolName)
         }
         //This error means there isn't a getter for this property
         else if (nResult == 1796) {
-            info.readFail = true;
+            info.readFail = 1;
             var.clear();
         }
         //Unknown error, output it for the user
@@ -188,7 +238,7 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> reqSymbolNames)
     }
 
     //Allocate a buffer for the data
-    long reqNum = symbolNames.size();
+    size_t reqNum = symbolNames.size();
     dataPar* parReq = new dataPar[symbolNames.size()];
     dataPar* parReqPop = parReq;
 
@@ -217,23 +267,22 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> reqSymbolNames)
 
     // Measure time for ADS-Read
     auto start = getTimestamp();
-
+    uint32_t bytesRead;
     // Read a variable from ADS
-    long nResult = AdsSyncReadWriteReq(
-        impl->pAddr,
+    long nResult = impl->route->ReadWriteReqEx2(
         ADSIGRP_SUMUP_READ, // Sum-Command, response will contain ADS-error code for each ADS-Sub-command
         reqNum, // Number of ADS-Sub-commands
         4 * reqNum + size, // we request additional "error"-flag(long) for each ADS-sub commands
         buffer,          // pointer to buffer for ADS-data
         12 * reqNum, // send 12 bytes (3 * long : IG, IO, Len) of each ADS-sub command
-        parReq);   // pointer to buffer for ADS-commands
-
+        parReq,   // pointer to buffer for ADS-commands
+        &bytesRead);
     if (nResult == ADSERR_NOERR) {
         PBYTE pObjAdsRes = (BYTE*)buffer + (reqNum * 4); // point to ADS-data
         PBYTE pObjAdsErrRes = (BYTE*)buffer;          // point to ADS-err
         PBYTE pdata = pObjAdsRes;
         for (auto symbolName : symbolNames) {
-            long result = *(long*)pObjAdsErrRes;
+            uint32_t result = *(uint32_t*)pObjAdsErrRes;
             pObjAdsErrRes += 4;
             symbolMetadata& info = impl->findInfo(symbolName);
             crow::json::wvalue& var = impl->findValue(symbolName);
@@ -244,7 +293,7 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> reqSymbolNames)
                 else if (result == 1796) {
                     var.clear();
                     //Remove this symbol from the reads and mark it as a failure
-                    info.readFail = true;
+                    info.readFail = 1;
                     impl->propertyReads.erase(std::remove(impl->propertyReads.begin(),
                                                           impl->propertyReads.end(),
                                                           symbolName),
@@ -266,6 +315,11 @@ void adsdatasrc::readSymbolValue(std::vector<std::string> reqSymbolNames)
     delete[] parReq;
 }
 
+void adsdatasrc::readSymbolValueDirect(std::string symbolName){
+    AdsVariable<float> read_var{*impl->route, symbolName};
+    float value = read_var;
+}
+
 //Write the value of a json packet to the PLC
 void adsdatasrc::writeSymbolValue(crow::json::rvalue packet)
 {
@@ -274,7 +328,8 @@ void adsdatasrc::writeSymbolValue(crow::json::rvalue packet)
     }
 
     std::vector<pair<std::string, std::string> > symbolNames;
-    gatherBaseTypeNames(packet, std::string(""), symbolNames);
+    string prefix = "";
+    gatherBaseTypeNames(packet, prefix, symbolNames);
 
     unsigned long size = 0;
     long reqNum = 0;
@@ -317,23 +372,22 @@ void adsdatasrc::writeSymbolValue(crow::json::rvalue packet)
         }
     }
 
-    PBYTE mAdsSumBufferRes = new BYTE[reqNum * sizeof(long)];
-
+    PBYTE mAdsSumBufferRes = new BYTE[reqNum * 4];
+    uint32_t bytesRead;
     // Read a variable from ADS
-    long nResult = AdsSyncReadWriteReq(
-        impl->pAddr,
+    long nResult = impl->route->ReadWriteReqEx2(
         ADSIGRP_SUMUP_WRITE, // Sum-Command, response will contain ADS-error code for each ADS-Sub-command
         reqNum, // Number of ADS-Sub-commands
-        reqNum * sizeof(long), // we request additional "error"-flag(long) for each ADS-sub commands
+        reqNum * 4, // we request additional "error"-flag(long) for each ADS-sub commands
         mAdsSumBufferRes,          // pointer to buffer for ADS-data
         reqNum * sizeof(dataPar) + size,      // send x bytes (3 * long : IG, IO, Len) + data command
-        buffer);   // pointer to buffer for ADS-commands
-
+        buffer,   // pointer to buffer for ADS-commands
+        &bytesRead);
     if (nResult == ADSERR_NOERR) {
-        long* pResult = (long*)mAdsSumBufferRes;
+        uint32_t* pResult = (uint32_t*)mAdsSumBufferRes;
         //Output the individual statuses
         for (auto symbolName : symbolNames) {
-            long result = *pResult;
+            uint32_t result = *pResult;
             pResult += 1;
             if (result != ADSERR_NOERR) {
                 cerr << "Error Writing: " << result << " " << symbolName.first << '\n';
@@ -359,14 +413,15 @@ void adsdatasrc::getSymbolHandle(std::string symbolName)
 
     //If the symbol is a property and we don't have a handle, get one
     if (info.handle == 0) {
+        uint32_t bytesRead;
         // Fetch handle for an <szVar> PLC variable
-        long nResult = AdsSyncReadWriteReq(impl->pAddr,
-                                           ADSIGRP_SYM_HNDBYNAME,
-                                           0x0,
-                                           sizeof(info.handle),
-                                           &info.handle,
-                                           info.name.size(),
-                                           (void*)info.name.c_str());
+        long nResult = impl->route->ReadWriteReqEx2(ADSIGRP_SYM_HNDBYNAME,
+                                            0x0,
+                                            sizeof(info.handle),
+                                            &info.handle,
+                                            info.name.size(),
+                                            (void*)info.name.c_str(),
+                                            &bytesRead);
         //Parse the buffer into the variable
         if (nResult == ADSERR_NOERR) {} else {
             cerr << "Error: AdsSyncReadReq: " << nResult << '\n';
@@ -408,7 +463,8 @@ void adsdatasrc::gatherBaseTypeNames_Member(crow::json::rvalue& member, std::str
                                             std::vector<pair<std::string, std::string> >& names)
 {
     if (member.t() == crow::json::type::Object) {
-        gatherBaseTypeNames(member, prefix + ".", names);
+        string name = prefix + ".";
+        gatherBaseTypeNames(member, name, names);
     } else if (member.t() == crow::json::type::List) {
         gatherBaseTypeNames(member, prefix, names);
     } else {

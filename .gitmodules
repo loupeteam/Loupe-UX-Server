@@ -1,3 +1,7 @@
 [submodule "src/LuxServer/vcpkg"]
 	path = src/LuxServer/vcpkg
 	url = https://github.com/microsoft/vcpkg.git
+[submodule "src/LuxServer/depends/ADS"]
+	path = src/LuxServer/depends/ADS
+	url = https://github.com/loupeteam/ADS.git
+	branch = master

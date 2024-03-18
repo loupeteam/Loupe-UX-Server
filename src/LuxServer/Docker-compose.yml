@@ -1,0 +1,13 @@
+version: '3.1'
+
+services:
+  lux-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lux-dev-image:latest
+    container_name: lux-dev-container
+    volumes:
+      - .:/src
+       
+

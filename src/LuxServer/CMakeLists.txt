@@ -29,6 +29,9 @@ set(BUILD_SHARED_LIBS OFF)
 
 include_directories(PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+# set the install directory
+set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/install)
+
 add_definitions(-DNOMINMAX)
 
 add_subdirectory(src)
